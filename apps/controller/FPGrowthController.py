@@ -1,6 +1,7 @@
 import hashlib
 import os
 import time
+import numpy as np
 from itertools import combinations
 from collections import defaultdict
 from flask import Flask, flash, request, jsonify, url_for, session, render_template, redirect
@@ -8,39 +9,18 @@ from apps.database.database import get_db
 from functools import wraps
 from datetime import datetime
 
-class FPGrowthController:
-    @staticmethod
-    def fpgrowth_index():
-        try:
-            db = get_db()
-            cursor = db.cursor()
-            
-            # Get file info
-            cursor.execute('SELECT * FROM file_infos LIMIT 1')
-            file_info = cursor.fetchone()
-            
-            # Get process status
-            cursor.execute('SELECT * FROM process LIMIT 1')
-            process = cursor.fetchone()
-            
-            # Get setup parameters
-            cursor.execute('SELECT * FROM setups LIMIT 1')
-            setup = cursor.fetchone()
-            
-            return render_template(
-                'pages/fp_growth.html', 
-                header_title='Algoritma FP-Growth', 
-                process=process, 
-                file_info=file_info, 
-                setup=setup
-            )
-        except Exception as e:
-            flash(f'Terjadi kesalahan: {str(e)}', 'error')
-            return redirect(url_for('routes.dashboard'))
-        finally:
-            if cursor:
-                cursor.close()
+class FPTreeNode:
+    __slots__ = ['nama', 'jumlah', 'induk', 'anak', 'tautan']
+    
+    def __init__(self, nama, jumlah, induk):
+        self.nama = nama
+        self.jumlah = jumlah
+        self.induk = induk
+        self.anak = {}
+        self.tautan = None
 
+class FPGrowthController:
+   
     @staticmethod
     def setup_fp():
         if request.method == 'POST':
@@ -171,7 +151,7 @@ class FPGrowthController:
         try:
             db = get_db()
             cursor = db.cursor()
-            start_time = time.time()
+            
             
             # Get process status
             cursor.execute('SELECT * FROM process LIMIT 1')
@@ -195,7 +175,9 @@ class FPGrowthController:
             transactions = [row[1].split(', ') for row in transactions_data]
             transaction_codes = [row[0] for row in transactions_data]
             total_transactions = len(transactions)
+            min_support_count = int(min_support * total_transactions)
 
+            start_time = time.time()
             # ==================================
             # STEP 1: Frequent 1-itemsets
             # ==================================
@@ -280,17 +262,9 @@ class FPGrowthController:
             # ==================================
             # STEP 4: FP-Tree Construction and Mining
             # ==================================
-            class FPTreeNode:
-                def __init__(self, name, count, parent):
-                    self.name = name
-                    self.count = count
-                    self.parent = parent
-                    self.children = {}
-                    self.link = None
-            
             # Build header table
             header_table = defaultdict(list)
-            root = FPTreeNode(None, None, None)
+            root = FPTreeNode(None, 0, None)
             
             # Build FP-Tree
             for transaction in transactions:
@@ -301,181 +275,190 @@ class FPGrowthController:
                 # Update tree
                 current_node = root
                 for item in filtered_items:
-                    if item in current_node.children:
-                        child = current_node.children[item]
-                        child.count += 1
+                    if item in current_node.anak:
+                        child = current_node.anak[item]
+                        child.jumlah += 1
                     else:
                         child = FPTreeNode(item, 1, current_node)
-                        current_node.children[item] = child
+                        current_node.anak[item] = child
                         
                         # Update header table
                         if header_table[item]:
                             last_node = header_table[item][-1]
-                            last_node.link = child
+                            last_node.tautan = child
                         header_table[item].append(child)
                     
                     current_node = child
             
             # Mining steps storage
             mining_steps = []
+            semua_itemset_sering = []
             
-            def mine_tree(header_table, min_support_count, prefix, frequent_itemsets, level=0):
-                # Sort items by frequency
-                items = [item for item in header_table.keys()]
-                items.sort(key=lambda x: (-frequent_1_items[x], x))
+            def mine_tree(current_header, prefix, level=0):
+                items = list(current_header.keys())
                 
                 for item in items:
-                    # New itemset
-                    new_prefix = prefix.copy()
-                    new_prefix.add(item)
-                    support_count = sum(node.count for node in header_table[item])
-                    frequent_itemsets.append((new_prefix, support_count))
+                    support_count = sum(node.jumlah for node in current_header[item])
+                    new_prefix = prefix | {item}
+                    semua_itemset_sering.append((frozenset(new_prefix), support_count))
                     
                     # Conditional pattern base
                     conditional_patterns = []
-                    for node in header_table[item]:
+                    for node in current_header[item]:
                         path = []
-                        parent = node.parent
-                        while parent.name is not None:
-                            path.append(parent.name)
-                            parent = parent.parent
+                        count = node.jumlah
+                        parent = node.induk
+                        
+                        while parent and parent.nama is not None:
+                            path.append(parent.nama)
+                            parent = parent.induk
+                        
                         if path:
-                            conditional_patterns.append((path, node.count))
+                            conditional_patterns.append((path[::-1], count))
                     
                     # Store mining step
+                    pattern_strs = [f"{path} (count: {count})" for path, count in conditional_patterns]
                     mining_steps.append({
                         'stage': 'Conditional Pattern Base',
                         'item': item,
-                        'pattern_base': str([f"{path} (count: {count})" for path, count in conditional_patterns]),
+                        'pattern_base': pattern_strs,
                         'level': level,
                         'tree_item': item_initials[item]
                     })
                     
                     # Build conditional FP-Tree
-                    conditional_header = defaultdict(list)
-                    conditional_root = FPTreeNode(None, None, None)
-                    
+                    item_counts_cond = defaultdict(int)
                     for path, count in conditional_patterns:
-                        path.sort(key=lambda x: (-frequent_1_items[x], x))
-                        for _ in range(count):
-                            current_node = conditional_root
-                            for item in path:
-                                if item in current_node.children:
-                                    child = current_node.children[item]
-                                    child.count += 1
-                                else:
-                                    child = FPTreeNode(item, 1, current_node)
-                                    current_node.children[item] = child
-                                    
-                                    if conditional_header[item]:
-                                        last_node = conditional_header[item][-1]
-                                        last_node.link = child
-                                    conditional_header[item].append(child)
-                                
-                                current_node = child
+                        for path_item in path:
+                            item_counts_cond[path_item] += count
                     
-                    if conditional_header:
+                    # Filter items yang memenuhi minimum support
+                    frequent_items_cond = {item: count for item, count in item_counts_cond.items() 
+                                        if count >= min_support_count}
+                    
+                    if frequent_items_cond:
+                        # Build conditional header table
+                        cond_header = defaultdict(list)
+                        cond_root = FPTreeNode(None, 0, None)
+                        
+                        # Sort items by frequency
+                        sorted_frequent = sorted(frequent_items_cond.items(), key=lambda x: (-x[1], x[0]))
+                        
+                        for path, count in conditional_patterns:
+                            # Filter and sort path items
+                            filtered_path = [item for item in path if item in frequent_items_cond]
+                            filtered_path.sort(key=lambda x: (-frequent_items_cond[x], x))
+                            
+                            # Update tree
+                            current_node_cond = cond_root
+                            for path_item in filtered_path:
+                                if path_item in current_node_cond.anak:
+                                    child_node = current_node_cond.anak[path_item]
+                                    child_node.jumlah += count
+                                else:
+                                    child_node = FPTreeNode(path_item, count, current_node_cond)
+                                    current_node_cond.anak[path_item] = child_node
+                                    
+                                    if cond_header[path_item]:
+                                        cond_header[path_item][-1].tautan = child_node
+                                    cond_header[path_item].append(child_node)
+                                
+                                current_node_cond = child_node
+                        
+                        # Store conditional tree info
                         mining_steps.append({
                             'stage': 'Conditional FP-Tree',
                             'item': item,
                             'pattern_base': '',
                             'level': level,
-                            'tree_item': ', '.join([item_initials[i] for i in conditional_header.keys()])
+                            'tree_item': ', '.join([item_initials[i] for i in cond_header.keys()])
                         })
                         
                         # Recursive mining
-                        mine_tree(conditional_header, min_support_count, new_prefix, frequent_itemsets, level+1)
-                        
-                        mining_steps.append({
-                            'stage': 'Frequent Itemset',
-                            'item': item,
-                            'pattern_base': '',
-                            'level': level,
-                            'tree_item': ', '.join([item_initials[i] for i in new_prefix])
-                        })
+                        mine_tree(cond_header, new_prefix, level + 1)
             
-            # Mine the FP-Tree
-            frequent_itemsets = []
-            mine_tree(header_table, min_support * total_transactions, set(), frequent_itemsets)
+            # Start mining
+            mine_tree(header_table, set())
             
             # Store mining steps
             for step in mining_steps:
+                pattern_base_str = '; '.join(step['pattern_base']) if isinstance(step['pattern_base'], list) else step['pattern_base']
                 cursor.execute(
                     '''INSERT INTO mining_fptree_fp 
                     (stage, item, pattern_base, level, tree_item) 
                     VALUES (%s, %s, %s, %s, %s)''',
-                    (step['stage'], step['item'], step['pattern_base'], step['level'], step['tree_item'])
+                    (step['stage'], step['item'], pattern_base_str, step['level'], step['tree_item'])
                 )
             
             # ==================================
             # STEP 5: Association Rules
             # ==================================
             rules = []
-            for itemset, support_count in frequent_itemsets:
-                itemset = list(itemset)
-                if len(itemset) > 1:
-                    support = support_count / total_transactions
+            itemset_dict = {itemset: support for itemset, support in semua_itemset_sering}
+            
+            for itemset, support_count in semua_itemset_sering:
+                if len(itemset) < 2:
+                    continue
                     
-                    for i in range(1, len(itemset)):
-                        for antecedent in combinations(itemset, i):
-                            antecedent = set(antecedent)
-                            consequent = set(itemset) - antecedent
+                itemset_list = list(itemset)
+                support = support_count / total_transactions
+                
+                # Generate all possible antecedents
+                for i in range(1, len(itemset_list)):
+                    for antecedent in combinations(itemset_list, i):
+                        antecedent_set = frozenset(antecedent)
+                        consequent_set = itemset - antecedent_set
+                        
+                        # Find antecedent support
+                        ant_support_count = 0
+                        for itemset2, count in semua_itemset_sering:
+                            if antecedent_set.issubset(itemset2):
+                                ant_support_count = count
+                                break
+                        
+                        if ant_support_count == 0:
+                            continue
                             
-                            # Find antecedent support
-                            antecedent_support = 0
-                            for itemset2, count in frequent_itemsets:
-                                if antecedent.issubset(itemset2):
-                                    antecedent_support = count / total_transactions
+                        ant_support = ant_support_count / total_transactions
+                        confidence = support / ant_support
+                        
+                        if confidence >= min_confidence:
+                            # Find consequent support
+                            cons_support_count = 0
+                            for itemset2, count in semua_itemset_sering:
+                                if consequent_set.issubset(itemset2):
+                                    cons_support_count = count
                                     break
-                        
-                            # Calculate confidence
-                            confidence = support / antecedent_support if antecedent_support > 0 else 0
-                        
-                            if confidence >= min_confidence:
-                                # Find consequent support
-                                consequent_support = 0
-                                for itemset2, count in frequent_itemsets:
-                                    if consequent.issubset(itemset2):
-                                        consequent_support = count / total_transactions
-                                        break
-                                
-                                # Calculate metrics
-                                lift = confidence / consequent_support if consequent_support > 0 else 0
-                                correlation = "Positif" if lift > 1 else "Negatif" if lift < 1 else "Netral"
-                                precision = confidence
-                                recall = precision
-                                accuracy = (precision + recall) / 2
-                                f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
-                                
-                                # Convert to item names
-                                antecedent_names = []
-                                for a in antecedent:
-                                    try:
-                                        antecedent_names.append(initial_to_item[a])
-                                    except KeyError:
-                                        antecedent_names.append(a)
-                                
-                                consequent_names = []
-                                for c in consequent:
-                                    try:
-                                        consequent_names.append(initial_to_item[c])
-                                    except KeyError:
-                                        consequent_names.append(c)
-                                
-                                rule_str = f"{antecedent_names} => {consequent_names}"
-                                
-                                rules.append({
-                                    'rule': rule_str,
-                                    'support_a': round(antecedent_support, 4),
-                                    'support_b': round(support, 4),
-                                    'confidence': round(confidence, 4),
-                                    'lift': round(lift, 4),
-                                    'correlation': correlation,
-                                    'accuracy': round(accuracy, 4),
-                                    'precision': round(precision, 4),
-                                    'recall': round(recall, 4),
-                                    'f1_score': round(f1_score, 4)
-                                })
+                            
+                            cons_support = cons_support_count / total_transactions if cons_support_count > 0 else 0
+                            lift = confidence / cons_support if cons_support > 0 else 0
+                            
+                            correlation = "Positif" if lift > 1 else "Negatif" if lift < 1 else "Netral"
+                            
+                            # Convert back to original item names
+                            antecedent_names = [initial_to_item[item] if item in initial_to_item else item for item in antecedent]
+                            consequent_names = [initial_to_item[item] if item in initial_to_item else item for item in consequent_set]
+                            
+                            # Calculate metrics
+                            precision = confidence
+                            recall = precision
+                            f1_score = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0
+                            accuracy = (precision + recall) / 2
+                            
+                            rule_str = f"{antecedent_names} => {consequent_names}"
+                            
+                            rules.append({
+                                'rule': rule_str,
+                                'support_a': round(ant_support, 4),
+                                'support_b': round(support, 4),
+                                'confidence': round(confidence, 4),
+                                'lift': round(lift, 4),
+                                'correlation': correlation,
+                                'accuracy': round(accuracy, 4),
+                                'precision': round(precision, 4),
+                                'recall': round(recall, 4),
+                                'f1_score': round(f1_score, 4)
+                            })
             
             # Store association rules
             for rule in rules:
@@ -518,6 +501,105 @@ class FPGrowthController:
             db.rollback()
             flash(f'Gagal memproses FP-Growth: {str(e)}', 'danger')
             return redirect(url_for('routes.fpgrowth'))
+        finally:
+            if cursor:
+                cursor.close()
+    
+    @staticmethod
+    def calculate_fpgrowth():
+        try:
+            db = get_db()
+            cursor = db.cursor()
+            
+            # Get setup parameters
+            cursor.execute('SELECT min_support_fp, min_confidance_fp FROM setups LIMIT 1')
+            setup = cursor.fetchone()
+            if not setup:
+                setup = {'min_support_fp': 0.3, 'min_confidance_fp': 0.6}
+            
+            # Get file info
+            cursor.execute('SELECT * FROM file_infos LIMIT 1')
+            file_info = cursor.fetchone()
+            if not file_info:
+                file_info = {
+                    'filename': 'No file uploaded', 
+                    'count_transaction': 0, 
+                    'count_item': 0, 
+                    'year': 'N/A'
+                }
+            
+            # Get frequent itemsets
+            cursor.execute('SELECT * FROM frequent_fp ORDER BY id')
+            frequent_fp = cursor.fetchall()
+            
+            cursor.execute('''
+                SELECT df.*, f.name as frequent_name 
+                FROM detail_frequent_fp df 
+                JOIN frequent_fp f ON df.frequent_id = f.id 
+                ORDER BY f.id, df.id
+            ''')
+            detail_frequent_fp = cursor.fetchall()
+            
+            # Get association rules
+            cursor.execute('SELECT * FROM association_rule_fp ORDER BY id')
+            association_rule = cursor.fetchall()
+            
+            # Get metrics
+            cursor.execute('SELECT * FROM metrics_fp ORDER BY id DESC LIMIT 1')
+            metric = cursor.fetchone()
+            if not metric:
+                metric = {
+                    'execution_time': 'N/A', 
+                    'total_rules_found': 0, 
+                    'avg_lift': 0, 
+                    'avg_accuracy': 0
+                }
+            
+            return render_template(
+                'pages/calculate_fpgrowth.html',
+                header_title='Perhitungan FP-Growth',
+                frequent_fp=frequent_fp,
+                detail_frequent_fp=detail_frequent_fp,
+                association_rule=association_rule,
+                metric=metric,
+                file_info=file_info,
+                setup=setup
+            )
+        except Exception as e:
+            flash(f'Terjadi kesalahan: {str(e)}', 'error')
+            return redirect(url_for('routes.fpgrowth'))
+        finally:
+            if cursor:
+                cursor.close()
+
+    @staticmethod
+    def fpgrowth_index():
+        try:
+            db = get_db()
+            cursor = db.cursor()
+            
+            # Get file info
+            cursor.execute('SELECT * FROM file_infos LIMIT 1')
+            file_info = cursor.fetchone()
+            
+            # Get process status
+            cursor.execute('SELECT * FROM process LIMIT 1')
+            process = cursor.fetchone()
+            
+            # Get setup parameters
+            cursor.execute('SELECT * FROM setups LIMIT 1')
+            setup = cursor.fetchone()
+            
+            return render_template(
+                'pages/fp_growth.html', 
+                header_title='Algoritma FP-Growth', 
+                process=process, 
+                file_info=file_info, 
+                setup=setup
+            )
+        except Exception as e:
+            flash(f'Terjadi kesalahan: {str(e)}', 'error')
+            return redirect(url_for('routes.dashboard'))
         finally:
             if cursor:
                 cursor.close()

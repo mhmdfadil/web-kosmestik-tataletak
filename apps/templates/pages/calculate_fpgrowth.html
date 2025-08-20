@@ -1,0 +1,793 @@
+{% extends "/layouts/app.html" %}
+
+{% block content %}
+<!-- Content area -->
+<section class="p-6 md:p-10 mx-auto max-w-[980px]">
+    <!-- File Information Card -->
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-8 border border-gray-100">
+        <div class="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+            <h2 class="text-2xl font-bold text-dark">Informasi Dataset</h2>
+        </div>
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                    <h3 class="text-sm font-medium text-gray-500 flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        File Transaksi
+                    </h3>
+                    <p class="mt-2 text-lg font-semibold text-gray-900 truncate">{{ file_info[1] }}</p>
+                </div>
+                <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                    <h3 class="text-sm font-medium text-gray-500 flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                        </svg>
+                        Jumlah Item
+                    </h3>
+                    <p class="mt-2 text-lg font-semibold text-gray-900">{{ file_info[3] }}</p>
+                </div>
+                <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                    <h3 class="text-sm font-medium text-gray-500 flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        Rentang Tahun
+                    </h3>
+                    <p class="mt-2 text-lg font-semibold text-gray-900">{{ file_info[4] }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Parameters Card -->
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-8 border border-gray-100">
+        <div class="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+            <h2 class="text-2xl font-bold text-dark">Parameter FP-Growth</h2>
+        </div>
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                    <h3 class="text-sm font-medium text-gray-500 flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                        </svg>
+                        Minimum Support
+                    </h3>
+                    <p class="mt-2 text-lg font-semibold text-gray-900">
+                        {{ setup[0] }} <span class="text-blue-600">({{ "%.0f"|format(setup[0] * 100) }}%)</span>
+                    </p>
+                </div>
+                <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                    <h3 class="text-sm font-medium text-gray-500 flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                        Minimum Confidence
+                    </h3>
+                    <p class="mt-2 text-lg font-semibold text-gray-900">
+                        {{ setup[1] }} <span class="text-blue-600">({{ "%.0f"|format(setup[1] * 100) }}%)</span>
+                    </p>
+                </div>
+                <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                    <h3 class="text-sm font-medium text-gray-500 flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                        </svg>
+                        Total Transaksi
+                    </h3>
+                    <p class="mt-2 text-lg font-semibold text-gray-900">{{ file_info[2] }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Frequent Itemsets Section -->
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-8 border border-gray-100">
+        <div class="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                <h2 class="text-2xl font-bold text-dark">Frequent Itemsets</h2>
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white text-blue-700">
+                        <svg class="-ml-1 mr-1.5 h-2 w-2 text-blue-500" fill="currentColor" viewBox="0 0 8 8">
+                            <circle cx="4" cy="4" r="3" />
+                        </svg>
+                       {{ frequent_fp|length }} Itemsets
+                </span>
+            </div>
+        </div>
+        
+<!-- jQuery -->
+        <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+        <!-- Select2 -->
+        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+        <!-- AG Grid -->
+        <script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.js"></script>
+        <link href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-grid.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-alpine.css" rel="stylesheet">
+
+        {% for frequent in frequent_fp %}
+        <div class="p-6 border-b border-gray-200 last:border-b-0">
+            <div class="flex items-center mb-4">
+                <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                    <span class="text-blue-600 font-bold">{{ loop.index }}</span>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-xl font-semibold text-gray-800">{{ frequent[1] }}</h3>
+                    <p class="text-sm text-gray-500">{{ detail_frequent_fp|selectattr('5', 'equalto', frequent[0])|list|length }} items</p>
+                </div>
+            </div>
+            
+            <!-- Grid Container -->
+            <div class="overflow-auto rounded-lg border border-gray-200">
+                <div id="grid-{{ frequent[0] }}" class="ag-theme-custom" style="height: 500px; width: 100%;"></div>
+            </div>
+        </div>
+
+        <script>
+        $(document).ready(function() {
+            // Data untuk grid ini
+            const rowData{{ frequent[0] }} = [
+                {% for detail in detail_frequent_fp if detail[5] == frequent[0] %}
+                {
+                    item: "{{ detail[1] }}",
+                    transactionCount: {{ detail[2] }},
+                    support: {{ detail[3] }},
+                    description: "{{ detail[4] }}"
+                }{% if not loop.last %},{% endif %}
+                {% endfor %}
+            ];
+
+            const columnDefs{{ frequent[0] }} = [
+                { 
+                    headerName: "No.", 
+                    valueGetter: "node.rowIndex + 1", 
+                    width: 80,
+                    headerClass: "text-center",
+                    cellClass: "text-center",
+                    pinned: 'left',
+                    suppressSizeToFit: true
+                },
+                { 
+                    headerName: "Item", 
+                    field: "item", 
+                    width: 350,
+                    filter: 'agTextColumnFilter',
+                    cellRenderer: function(params) {
+                        return `
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center mr-3">
+                                    <svg class="h-4 w-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                </div>
+                                <div class="text-sm font-medium text-gray-900">${params.value}</div>
+                            </div>
+                        `;
+                    }
+                },
+                { 
+                    headerName: "Transaction Count", 
+                    field: "transactionCount", 
+                    width: 180,
+                    filter: 'agNumberColumnFilter',
+                    cellClass: "font-medium"
+                },
+                { 
+                    headerName: "Support", 
+                    field: "support", 
+                    width: 150,
+                    filter: 'agNumberColumnFilter',
+                    cellClass: "font-medium"
+                },
+                { 
+                    headerName: "Description", 
+                    field: "description", 
+                    width: 150,
+                    filter: 'agTextColumnFilter',
+                    cellRenderer: function(params) {
+                        const isLolos = params.value === 'Lolos';
+                        return `
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                ${isLolos ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                ${params.value}
+                            </span>
+                        `;
+                    }
+                }
+            ];
+
+            const gridOptions{{ frequent[0] }} = {
+                columnDefs: columnDefs{{ frequent[0] }},
+                rowData: rowData{{ frequent[0] }},
+                pagination: true,
+                paginationPageSize: 10,
+                paginationPageSizeSelector: [5, 10, 20, 50],
+                defaultColDef: { 
+                    sortable: true, 
+                    filter: true, 
+                    resizable: true,
+                    minWidth: 120,
+                    
+                    floatingFilter: true,
+                    suppressMenu: false
+                },
+                rowHeight: 40,
+                animateRows: true,
+                enableCellTextSelection: true,
+                ensureDomOrder: true,
+                sideBar: {
+                    toolPanels: ['columns', 'filters'],
+                    defaultToolPanel: ''
+                },
+                statusBar: {
+                    statusPanels: [
+                        { statusPanel: 'agTotalAndFilteredRowCountComponent', align: 'left' },
+                        { statusPanel: 'agTotalRowCountComponent', align: 'center' },
+                        { statusPanel: 'agFilteredRowCountComponent' },
+                        { statusPanel: 'agSelectedRowCountComponent' }
+                    ]
+                },
+                enableRangeSelection: true,
+                rowSelection: 'multiple',
+                suppressRowClickSelection: true
+            };
+
+            const gridDiv = document.querySelector('#grid-{{ frequent[0] }}');
+            agGrid.createGrid(gridDiv, gridOptions{{ frequent[0] }});
+        });
+        </script>
+        {% endfor %}
+
+        <style>
+            /* Custom AG Grid Theme */
+            .ag-theme-custom {
+                --ag-background-color: #ffffff;
+                --ag-border-color: rgba(199, 210, 254, 0.5);
+                --ag-header-background-color: rgba(99, 102, 241, 0.1);
+                --ag-header-foreground-color: #4f46e5;
+                --ag-odd-row-background-color: rgba(238, 242, 255, 0.4);
+                --ag-row-hover-color: rgba(199, 210, 254, 0.4);
+                --ag-row-border-color: rgba(224, 231, 255, 0.8);
+                --ag-secondary-border-color: rgba(165, 180, 252, 0.3);
+                --ag-font-family: 'Inter', system-ui, -apple-system, sans-serif;
+                --ag-font-size: 14px;
+                --ag-grid-size: 8px;
+                --ag-list-item-height: 24px;
+                --ag-header-height: 40px;
+                --ag-row-height: 50px;
+                --ag-cell-horizontal-padding: 16px;
+                --ag-borders: solid 1px;
+                --ag-border-radius: 8px;
+                --ag-wrapper-border-radius: 12px;
+                --ag-header-column-separator-display: block;
+                --ag-header-column-separator-height: 60%;
+                --ag-header-column-separator-width: 1px;
+                --ag-header-column-separator-color: rgba(165, 180, 252, 0.5);
+                --ag-range-selection-border-color: rgba(99, 102, 241, 0.5);
+                --ag-range-selection-background-color: rgba(99, 102, 241, 0.1);
+                --ag-range-selection-background-color-2: rgba(99, 102, 241, 0.2);
+                --ag-range-selection-background-color-3: rgba(99, 102, 241, 0.3);
+                --ag-range-selection-background-color-4: rgba(99, 102, 241, 0.4);
+                --ag-input-focus-border-color: #6366f1;
+                --ag-input-focus-box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+                --ag-selected-tab-underline-color: #6366f1;
+                --ag-selected-tab-underline-width: 2px;
+                --ag-checkbox-background-color: #f5f7ff;
+                --ag-checkbox-checked-color: #6366f1;
+                --ag-modal-overlay-background-color: rgba(107, 114, 128, 0.5);
+            }
+
+            .ag-theme-custom .ag-root-wrapper {
+                border-radius: 8px;
+                box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+                overflow: hidden;
+                border: 1px solid rgba(224, 231, 255, 0.8);
+            }
+
+            .ag-theme-custom .ag-header {
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                font-size: 12px;
+                border-bottom: 2px solid rgba(199, 210, 254, 0.5);
+            }
+
+            .ag-theme-custom .ag-header-cell {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+
+            .ag-theme-custom .ag-cell {
+                display: flex;
+                align-items: center;
+                color: #4b5563;
+                font-weight: 500;
+                border-right: 1px solid rgba(224, 231, 255, 0.5);
+            }
+
+            .ag-theme-custom .ag-cell:last-child {
+                border-right: none;
+            }
+
+            .ag-theme-custom .ag-row {
+                border-bottom: 1px solid rgba(224, 231, 255, 0.5);
+            }
+
+            .ag-theme-custom .ag-row-even {
+                background-color: rgba(249, 250, 251, 0.5);
+            }
+
+            .ag-theme-custom .ag-row-hover {
+                background-color: rgba(199, 210, 254, 0.2) !important;
+            }
+
+            .ag-theme-custom .ag-pinned-left-header {
+                border-right: 2px solid rgba(199, 210, 254, 0.5);
+            }
+
+            .ag-theme-custom .ag-pinned-left-cols-container {
+                border-right: 2px solid rgba(199, 210, 254, 0.5);
+            }
+
+            .ag-theme-custom .ag-icon {
+                color: #6366f1;
+            }
+
+            .ag-theme-custom .ag-header-cell-menu-button:hover {
+                background-color: rgba(99, 102, 241, 0.1);
+            }
+
+            .ag-theme-custom .ag-filter-toolpanel-header,
+            .ag-theme-custom .ag-column-toolpanel-header {
+                font-weight: 600;
+                color: #4f46e5;
+                background-color: rgba(238, 242, 255, 0.5);
+            }
+
+            .ag-theme-custom .ag-set-filter-list {
+                border-top: 1px solid rgba(199, 210, 254, 0.5);
+            }
+
+            .ag-theme-custom .ag-tab {
+                padding: 8px 16px;
+                margin: 0 4px;
+                border-radius: 6px 6px 0 0;
+            }
+
+            .ag-theme-custom .ag-tab-selected {
+                background-color: rgba(238, 242, 255, 0.5);
+            }
+
+            .ag-theme-custom .ag-status-bar {
+                background-color: rgba(238, 242, 255, 0.5);
+                border-top: 1px solid rgba(199, 210, 254, 0.5);
+                font-size: 12px;
+                color: #4b5563;
+                padding: 8px 16px;
+            }
+
+            /* Custom scrollbar for the grid */
+            .ag-theme-custom ::-webkit-scrollbar {
+                width: 10px;
+                height: 10px;
+            }
+
+            .ag-theme-custom ::-webkit-scrollbar-track {
+                background: rgba(238, 242, 255, 0.5);
+                border-radius: 10px;
+            }
+
+            .ag-theme-custom ::-webkit-scrollbar-thumb {
+                background: rgba(165, 180, 252, 0.7);
+                border-radius: 10px;
+            }
+
+            .ag-theme-custom ::-webkit-scrollbar-thumb:hover {
+                background: rgba(99, 102, 241, 0.8);
+            }
+        </style> 
+
+    </div>
+
+    <!-- Association Rules Section -->
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-8 border border-gray-100">
+        <div class="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold text-dark">Association Rules</h2>
+                    <p class="mt-1 text-sm text-gray-500">Total {{ association_rule|length }} rules ditemukan</p>
+                </div>
+                <div class="mt-2 md:mt-0">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white text-blue-700">
+                        <svg class="-ml-1 mr-1.5 h-2 w-2 text-blue-500" fill="currentColor" viewBox="0 0 8 8">
+                            <circle cx="4" cy="4" r="3" />
+                        </svg>
+                        Analisis Asosiasi
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="p-6">
+            <div class="mb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              
+            </div>
+            
+
+            <!-- Grid Container -->
+            <div class="overflow-auto rounded-lg border border-gray-200 p-4">
+                <div id="associationRulesGrid" class="ag-theme-custom" style="height: 300px; width: 100%;"></div>
+            </div>
+
+            <script>
+    $(document).ready(function() {
+        // Data dari server
+        const rowData = [
+            {% for rule in association_rule %}
+            {
+                antecedent: "{{ rule[1].split('=>')[0]|trim }}",
+                consequent: "{{ rule[1].split('=>')[1]|trim }}",
+                supportA: {{ rule[2] }},
+                supportB: {{ rule[3] }},
+                confidence: {{ rule[4] }},
+                lift: {{ rule[5] }},
+                correlation: "{{ rule[6] }}",
+                accuracy: {{ rule[7] }},
+                precision: {{ rule[8] }},
+                recall: {{ rule[9] }},
+                f1Score: {{ rule[10] }}
+            }{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ];
+
+        // Konfigurasi kolom AG Grid
+        const columnDefs = [
+            { 
+                headerName: "No.", 
+                valueGetter: "node.rowIndex + 1", 
+                width: 80,
+                headerClass: "text-center",
+                cellClass: "text-center",
+                pinned: 'left',
+                suppressSizeToFit: true
+            },
+            { 
+                headerName: "Rule", 
+                field: "antecedent", 
+                width: 350,
+                filter: 'agTextColumnFilter',
+                cellRenderer: function(params) {
+                    const antecedent = params.data.antecedent || "";
+                    const consequent = params.data.consequent || "";
+                    return `
+                        <div class="text-sm font-medium text-gray-900">
+                            <span class="text-blue-600">${antecedent}</span> 
+                            <span class="mx-1 text-gray-400">=></span> 
+                            <span class="text-green-600">${consequent}</span>
+                        </div>
+                    `;
+                }
+            },
+            { 
+                headerName: "Support A", 
+                field: "supportA", 
+                width: 120, 
+                filter: 'agNumberColumnFilter', 
+                cellClass: "text-center", 
+                valueFormatter: params => params.value !== undefined ? params.value.toFixed(2) : ''
+            },
+            { 
+                headerName: "Support B", 
+                field: "supportB", 
+                width: 120, 
+                filter: 'agNumberColumnFilter', 
+                cellClass: "text-center", 
+                valueFormatter: params => params.value !== undefined ? params.value.toFixed(2) : ''
+            },
+            { 
+                headerName: "Confidence", 
+                field: "confidence", 
+                width: 180, 
+                filter: 'agNumberColumnFilter',
+                cellRenderer: function(params) {
+                    if (params.value == null) return '';
+                    const percentage = Math.round(params.value * 100);
+                    return `
+                        <div class="flex items-center">
+                            <div class="h-2 w-20 bg-gray-200 rounded-full overflow-hidden">
+                                <div class="h-full bg-teal-600" style="width: ${percentage}%"></div>
+                            </div>
+                            <span class="ml-2 text-sm font-medium text-gray-900">${params.value.toFixed(2)}</span>
+                        </div>
+                    `;
+                }
+            },
+            { 
+                headerName: "Lift", 
+                field: "lift", 
+                width: 120, 
+                filter: 'agNumberColumnFilter',
+                cellRenderer: function(params) {
+                    if (params.value == null) return '';
+                    const liftValue = params.value;
+                    const isHigh = liftValue > 1.20;
+                    return `
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                            ${isHigh ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
+                            ${liftValue.toFixed(2)}
+                        </span>
+                    `;
+                }
+            },
+            { 
+                headerName: "Korelasi", 
+                field: "correlation", 
+                width: 130, 
+                filter: 'agTextColumnFilter',
+                cellRenderer: function(params) {
+                    const correlation = params.value || '';
+                    let bgClass = 'bg-gray-100 text-gray-800';
+                    if (correlation === 'Positif') bgClass = 'bg-green-100 text-green-800';
+                    else if (correlation === 'Negatif') bgClass = 'bg-red-100 text-red-800';
+                    return `
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${bgClass}">
+                            ${correlation}
+                        </span>
+                    `;
+                }
+            },
+            { 
+                headerName: "Accuracy", 
+                field: "accuracy", 
+                width: 120, 
+                filter: 'agNumberColumnFilter', 
+                cellClass: "text-center", 
+                valueFormatter: params => params.value !== undefined ? params.value.toFixed(2) : ''
+            },
+            { 
+                headerName: "Precision", 
+                field: "precision", 
+                width: 120, 
+                filter: 'agNumberColumnFilter', 
+                cellClass: "text-center", 
+                valueFormatter: params => params.value !== undefined ? params.value.toFixed(2) : ''
+            },
+            { 
+                headerName: "Recall", 
+                field: "recall", 
+                width: 120, 
+                filter: 'agNumberColumnFilter', 
+                cellClass: "text-center", 
+                valueFormatter: params => params.value !== undefined ? params.value.toFixed(2) : ''
+            },
+            { 
+                headerName: "F1-Score", 
+                field: "f1Score", 
+                width: 120, 
+                filter: 'agNumberColumnFilter', 
+                cellClass: "text-center", 
+                valueFormatter: params => params.value !== undefined ? params.value.toFixed(2) : ''
+            }
+        ];
+
+        const gridOptions = {
+            columnDefs: columnDefs,
+            rowData: rowData,
+            pagination: true,
+            paginationPageSize: 10,
+            paginationPageSizeSelector: [10, 25, 50, 100],
+            defaultColDef: { 
+                sortable: true, 
+                filter: true, 
+                resizable: true,
+                minWidth: 100,
+                floatingFilter: true,
+                suppressMenu: false
+            },
+            rowHeight: 40,
+            animateRows: true,
+            enableCellTextSelection: true,
+            ensureDomOrder: true,
+            sideBar: {
+                toolPanels: ['columns', 'filters'],
+                defaultToolPanel: ''
+            },
+            statusBar: {
+                statusPanels: [
+                    { statusPanel: 'agTotalAndFilteredRowCountComponent', align: 'left' },
+                    { statusPanel: 'agTotalRowCountComponent', align: 'center' },
+                    { statusPanel: 'agFilteredRowCountComponent' },
+                    { statusPanel: 'agSelectedRowCountComponent' },
+                    { statusPanel: 'agAggregationComponent' }
+                ]
+            },
+            enableRangeSelection: true,
+            rowSelection: 'multiple',
+            suppressRowClickSelection: true
+        };
+
+        const gridDiv = document.querySelector('#associationRulesGrid');
+        if (gridDiv) {
+            agGrid.createGrid(gridDiv, gridOptions);
+        } else {
+            console.error("Element dengan ID 'associationRulesGrid' tidak ditemukan");
+        }
+    });
+</script>
+
+
+        </div>
+    </div>
+
+    <!-- Metrics Section -->
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+        <div class="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+            <h2 class="text-2xl font-bold text-dark">Metrics</h2>
+        </div>
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                    <h3 class="text-sm font-medium text-gray-500 flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Execution Time
+                    </h3>
+                    <p class="mt-2 text-lg font-semibold text-gray-900">{{ metric[1] }}</p>
+                </div>
+                <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                    <h3 class="text-sm font-medium text-gray-500 flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                        </svg>
+                        Total Rules Found
+                    </h3>
+                    <p class="mt-2 text-lg font-semibold text-gray-900">{{ metric[2] }}</p>
+                </div>
+                <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                    <h3 class="text-sm font-medium text-gray-500 flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                        </svg>
+                        Average Lift
+                    </h3>
+                    <p class="mt-2 text-lg font-semibold text-gray-900">{{ metric[3] }}</p>
+                </div>
+                <div class="bg-white p-5 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                    <h3 class="text-sm font-medium text-gray-500 flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                        Average Accuracy
+                    </h3>
+                    <p class="mt-2 text-lg font-semibold text-gray-900">
+                        {{ metric[4] }} <span class="text-blue-600">({{ "%.0f"|format(metric[4] * 100) }}%)</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    /* Custom styling for DataTables */
+    .aprioriTable {
+        width: 100% !important;
+        font-size: 0.875rem;
+    }
+    
+    .aprioriTable thead th {
+        background-color: #f9fafb;
+        color: #374151;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .aprioriTable tbody tr {
+        transition: background-color 0.2s ease;
+    }
+    
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        padding: 0.25rem 0.75rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.375rem;
+        margin-left: 0.25rem;
+        color: #4b5563;
+    }
+    
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+        background: #3b82f6;
+        color: white !important;
+        border-color: #3b82f6;
+    }
+    
+    .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+        background: #e5e7eb;
+        color: #111827 !important;
+        border-color: #d1d5db;
+    }
+    
+    .dataTables_wrapper .dataTables_filter input {
+        border: 1px solid #d1d5db;
+        border-radius: 0.375rem;
+        padding: 0.375rem 0.75rem;
+        margin-left: 0.5rem;
+    }
+    
+    .dataTables_wrapper .dataTables_length select {
+        border: 1px solid #d1d5db;
+        border-radius: 0.375rem;
+        padding: 0.375rem 1.75rem 0.375rem 0.75rem;
+    }
+    /* Atur lebar dropdown colvis */
+    div.dt-button-collection {
+        width: 350px !important;  /* Sesuaikan lebar sesuai kebutuhan */
+        max-height: 500px !important;
+    }
+
+    /* Atur tata letak tombol dalam dropdown */
+    div.dt-button-collection button.dt-button {
+        width: 90%;
+        text-align: left !important;
+        padding: 8px 12px;
+        margin: 4px;
+    }
+</style>
+
+<!-- Include DataTables CSS -->
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.2.2/css/buttons.dataTables.min.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.dataTables.min.css">
+
+<!-- Include jQuery and DataTables JS -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.colVis.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        $('.aprioriTable').DataTable({
+            responsive: true,
+            scrollX: true,
+            scrollY: '60vh',
+            scrollCollapse: true,
+            dom: '<"flex flex-col md:flex-row md:justify-between mb-4"<"mb-2 md:mb-0"l><"flex gap-2"fB>>rt<"flex flex-col md:flex-row justify-between items-center mt-4"ip>',
+            buttons: [
+                {
+                    extend: 'colvis',
+                    text: 'Kolom',
+                    className: 'bg-white border border-gray-300 rounded-md shadow-sm px-5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
+                }
+            ],
+            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+            language: {
+                search: "Cari:",
+                searchPlaceholder: "Cari data...",
+                lengthMenu: "Tampilkan _MENU_ data",
+                info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+                infoEmpty: "Menampilkan 0 sampai 0 dari 0 data",
+                infoFiltered: "(disaring dari _MAX_ total data)",
+                paginate: {
+                    first: "Pertama",
+                    last: "Terakhir",
+                    next: "Selanjutnya",
+                    previous: "Sebelumnya"
+                },
+                emptyTable: "Tidak ada data yang tersedia",
+                zeroRecords: "Tidak ditemukan data yang sesuai"
+            },
+            initComplete: function() {
+                $('.dt-button').removeClass('dt-button');
+                $('.dt-buttons').addClass('mb-4');
+            }
+        });
+    });
+</script>
+
+{% endblock %}

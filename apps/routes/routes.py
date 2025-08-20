@@ -207,6 +207,13 @@ def process_fpgrowth():
     
     return FPGrowthController.process_index()
 
+@bp.route("/calculate-fpgrowth", methods=["GET"])
+def calculate_fpgrowth():  
+    if 'user_id' not in session:
+        flash('Silakan login terlebih dahulu.', 'info')  # Pesan jika belum login
+        return redirect(url_for('routes.login'))
+    
+    return FPGrowthController.calculate_fpgrowth()
 
 @bp.route("/result", methods=["GET"])
 def result():  
