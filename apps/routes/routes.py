@@ -8,6 +8,7 @@ from apps.controller.PreprocessingController import PreprocessingController
 from apps.controller.AprioriController import AprioriController
 from apps.controller.FPGrowthController import FPGrowthController
 from apps.controller.ResultController import ResultController
+from apps.controller.ProfileController import ProfileController
 
 bp = Blueprint('routes', __name__)
 
@@ -38,10 +39,18 @@ def dashboard():
     try:
         db = get_db()
         cursor = db.cursor()
+        cursor.execute("SELECT * FROM users WHERE id = %s", (session['user_id'],))
+        user = cursor.fetchone()
+
+        if not user:
+            flash("User tidak ditemukan.", "error")
+            return redirect(url_for('routes.login'))
         
         # Get file info (menggunakan tuple index)
         cursor.execute('SELECT * FROM file_infos LIMIT 1')
         file_info = cursor.fetchone()
+
+
         
         # Get all transaction items
         cursor.execute('SELECT item FROM data_transactions')
@@ -84,6 +93,7 @@ def dashboard():
             'pages/dashboard.html', 
             header_title='Dashboard', 
             file_info=file_info,
+            user=user,
             top_items=top_items,
             best_algorithms=best_algorithms,
             accuracy_ap=accuracy_ap,
@@ -97,6 +107,18 @@ def dashboard():
         if cursor:
             cursor.close()
 
+
+@bp.route("/profile", methods=["GET", "POST"])
+def profile():  
+    if 'user_id' not in session:
+        flash('Silakan login terlebih dahulu.', 'info')  # Pesan jika belum login
+        return redirect(url_for('routes.login'))
+    
+    if request.method == 'POST':
+        return ProfileController.profile_post()
+    # Pesan jika sudah login
+    # flash('Anda sudah login', 'success')
+    return ProfileController.profile_index()
 
 @bp.route("/input", methods=["GET", "POST"])
 def input():  

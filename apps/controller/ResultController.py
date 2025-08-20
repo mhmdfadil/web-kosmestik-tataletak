@@ -8,6 +8,9 @@ class ResultController:
         try:
             db = get_db()
             cursor = db.cursor()
+
+            cursor.execute("SELECT * FROM users WHERE id = %s", (session['user_id'],))
+            user = cursor.fetchone()
             
             # Get metrics for Apriori
             cursor.execute('''SELECT 
@@ -62,19 +65,21 @@ class ResultController:
                 
                 return render_template('pages/result.html', 
                                     header_title='Hasil', 
+                                    user=user,
                                     metrics_ap=formatted_metrics_ap, 
                                     metrics_fp=formatted_metrics_fp, 
                                     setup=setup)
             
             return render_template('pages/result.html', 
                                 header_title='Hasil', 
+                                user=user,
                                 metrics_ap=None, 
                                 metrics_fp=None, 
                                 setup=setup)
             
         except Exception as e:
             flash(f'Terjadi kesalahan: {str(e)}', 'error')
-            return redirect(url_for('routes.dashboard'))
+            return redirect(url_for('routes.result'))
         finally:
             if cursor:
                 cursor.close()

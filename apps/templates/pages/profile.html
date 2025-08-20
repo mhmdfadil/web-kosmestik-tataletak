@@ -1,0 +1,184 @@
+{% extends "/layouts/app.html" %}
+
+{% block content %}
+<!-- Content area -->
+<div class="p-8 max-w-full">
+    <div class=" mx-auto bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-3xl font-semibold mb-6 text-gray-800">Ubah Profil</h2>
+        
+        <form method="POST" action="{{ url_for('routes.profile') }}" enctype="multipart/form-data" id="profileForm">
+            <!-- Foto Profil -->
+            <div class="mb-6 flex flex-col items-center">
+                <div class="relative mb-4">
+                    <!-- Perbaikan: Pastikan path gambar default benar -->
+                    {% set profile_image = user[6] if user and user[6] else 'https://t4.ftcdn.net/jpg/06/12/49/29/360_F_612492904_QiEcGRoXFEKtzWaMGsxEnE1Kzh2RcesS.jpg' %}
+
+                    <img id="profilePreview" 
+                        src="{% if profile_image.startswith('http') %}{{ profile_image }}{% else %}{{ url_for('static', filename='images/' ~ profile_image) }}{% endif %}" 
+                        class="w-32 h-32 rounded-full object-cover border-4 border-gray-200">
+
+                    <label for="photos" class="absolute bottom-0 right-0 bg-blue-500 text-white p-2 rounded-full cursor-pointer hover:bg-blue-600">
+                        <i class="fas fa-camera"></i>
+                        <input type="file" id="photos" name="photos" accept="image/*" class="hidden">
+                    </label>
+                </div>
+                <p class="text-sm text-gray-500">Klik ikon kamera untuk mengubah foto</p>
+            </div>
+            
+            <!-- Nama Lengkap -->
+            <div class="mb-5">
+                <label for="fullname" class="block text-gray-700 font-medium mb-2">Nama Lengkap<span class="text-red-500 ml-1">*</span></label>
+                <input type="text" id="fullname" name="fullname" value="{{ user[3] if user and user[3] }}" 
+                       class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+            </div>
+            
+            <!-- Email -->
+            <div class="mb-5">
+                <label for="email" class="block text-gray-700 font-medium mb-2">Email<span class="text-red-500 ml-1">*</span></label>
+                <input type="email" id="email" name="email" value="{{ user[1] if user and user[1] }}" 
+                       class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+            </div>
+            
+            <!-- No. HP -->
+            <div class="mb-5">
+                <label for="phone" class="block text-gray-700 font-medium mb-2">No. HP<span class="text-red-500 ml-1">*</span></label>
+                <input type="tel" id="phone" name="phone" value="{{ user[5] if user and user[5] }}" 
+                       class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            
+            <!-- Jenis Kelamin -->
+            <div class="mb-5">
+                <label class="block text-gray-700 font-medium mb-2">Jenis Kelamin<span class="text-red-500 ml-1">*</span></label>
+                <div class="flex space-x-4">
+                    <label class="inline-flex items-center">
+                        <input type="radio" name="gender" value="L" {{ 'checked' if user and user[4] == 'L' }} class="form-radio text-blue-600">
+                        <span class="ml-2">Laki-laki</span>
+                    </label>
+                    <label class="inline-flex items-center">
+                        <input type="radio" name="gender" value="P" {{ 'checked' if user and user[4] == 'P' }} class="form-radio text-blue-600">
+                        <span class="ml-2">Perempuan</span>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Password Baru -->
+            <div class="mb-5">
+                <label for="new_password" class="block text-gray-700 font-medium mb-2">Password Baru</label>
+                <input type="password" id="new_password" name="new_password" 
+                       class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                       placeholder="Minimal 8 karakter">
+                <p class="text-sm text-gray-400 mt-2">Kosongkan jika tidak ingin mengubah password</p>
+            </div>
+            
+            <!-- Konfirmasi Password -->
+            <div class="mb-5">
+                <label for="confirm_password" class="block text-gray-700 font-medium mb-2">Konfirmasi Password</label>
+                <input type="password" id="confirm_password" name="confirm_password" 
+                       class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                       placeholder="Konfirmasi password baru">
+            </div>
+            
+            <!-- Tombol Aksi -->
+            <div class="flex justify-start space-x-6 py-2">
+                <button type="submit" class="px-10 py-2 bg-teal-700 text-white rounded-lg hover:bg-teal-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    Simpan
+                </button>
+                <button type="button" id="btnCancel" class="px-10 py-2 bg-gray-200  rounded-lg text-black-700 hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                    Batal
+                </button>
+                
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    // Toast configuration
+    const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+            toast.addEventListener('mouseenter', Swal.stopTimer)
+            toast.addEventListener('mouseleave', Swal.resumeTimer)
+        }
+    });
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+          {% for category, message in messages %}
+                  Toast.fire({
+                      icon: '{{ "success" if category == "success" else
+                              "error" if category == "danger" else
+                              "warning" if category == "warning" else
+                              "info" }}',
+                      title: '{{ message }}',
+                      background: '{{ "#f0f9eb" if category == "success" else
+                                    "#fde8e8" if category == "danger" else
+                                    "#fff8e6" if category == "warning" else
+                                    "#e8f4fd" }}',
+                      color: '{{ "#0f5132" if category == "success" else
+                              "#842029" if category == "danger" else
+                              "#664d03" if category == "warning" else
+                              "#055160" }}',
+                      iconColor: '{{ "#28a745" if category == "success" else
+                                  "#dc3545" if category == "danger" else
+                                  "#ffc107" if category == "warning" else
+                                  "#17a2b8" }}'
+                  });
+          {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    // Preview image before upload
+    document.getElementById('photos').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                document.getElementById('profilePreview').src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Form validation
+    document.getElementById('profileForm').addEventListener('submit', function(e) {
+        const newPassword = document.getElementById('new_password').value;
+        const confirmPassword = document.getElementById('confirm_password').value;
+        
+        if (newPassword || confirmPassword) {
+            if (newPassword.length < 8) {
+                e.preventDefault();
+                Toast.fire({
+                    icon: 'error',
+                    title: 'Password harus minimal 8 karakter',
+                    background: '#fde8e8',
+                    color: '#842029',
+                    iconColor: '#dc3545'
+                });
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                e.preventDefault();
+                Toast.fire({
+                    icon: 'error',
+                    title: 'Konfirmasi password tidak sesuai',
+                    background: '#fde8e8',
+                    color: '#842029',
+                    iconColor: '#dc3545'
+                });
+            }
+        }
+    });
+
+    // Cancel button
+    document.getElementById('btnCancel').addEventListener('click', function() {
+        window.location.href = "{{ url_for('routes.dashboard') }}"; // Ganti dengan URL yang sesuai
+    });
+</script>
+{% endblock %}

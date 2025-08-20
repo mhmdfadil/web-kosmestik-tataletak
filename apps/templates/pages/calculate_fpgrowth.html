@@ -205,7 +205,7 @@
                 rowData: rowData{{ frequent[0] }},
                 pagination: true,
                 paginationPageSize: 10,
-                paginationPageSizeSelector: [5, 10, 20, 50],
+                paginationPageSizeSelector: [10, 20, 50, 100],
                 defaultColDef: { 
                     sortable: true, 
                     filter: true, 
@@ -393,6 +393,469 @@
 
     </div>
 
+    <!-- Tabel Item dan Inisial Section -->
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-8 border border-gray-100">
+        <div class="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold text-dark">Tabel Item dan Inisial</h2>
+                    <p class="mt-1 text-sm text-gray-500">Total {{ item_initial|length }} item (Lolos)</p>
+                </div>
+                <div class="mt-2 md:mt-0">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white text-blue-700">
+                        <svg class="-ml-1 mr-1.5 h-2 w-2 text-blue-500" fill="currentColor" viewBox="0 0 8 8">
+                            <circle cx="4" cy="4" r="3" />
+                        </svg>
+                        Analisis Inisial
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="p-6">
+            <div class="mb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              
+            </div>
+            
+
+            <!-- Grid Container -->
+            <div class="overflow-auto rounded-lg border border-gray-200 p-4">
+                <div id="initialGrid" class="ag-theme-custom" style="height: 300px; width: 100%;"></div>
+            </div>
+
+            <script>
+                $(document).ready(function() {
+                    // Fungsi untuk membersihkan string dari karakter berbahaya
+                    function cleanString(str) {
+                        if (typeof str !== 'string') return '';
+                        return str.replace(/"/g, '&quot;')
+                                 .replace(/'/g, '&#39;')
+                                 .replace(/</g, '&lt;')
+                                 .replace(/>/g, '&gt;')
+                                 .replace(/\\/g, '\\\\');
+                    }
+
+                    // Data dari server dengan penanganan error yang lebih baik
+                    const rowData = [
+                        {% for initial in item_initial %}
+                        {
+                            item: "{{ initial[1]|default('') }}",
+                            is_initial: "{{ initial[2]|default('') }}",
+                            count: {{ initial[3]|default(0) }},
+                            support: {{ initial[4]|default(0) }}
+                        }{% if not loop.last %},{% endif %}
+                        {% endfor %}
+                    ];
+
+                    // Bersihkan data setelah di-load
+                    const cleanedRowData = rowData.map(item => {
+                        return {
+                            item: cleanString(item.item),
+                            is_initial: item.is_initial,
+                            count: item.count,
+                            support: item.support
+                        };
+                    });
+
+                    // Konfigurasi kolom AG Grid
+                    const columnDefs = [
+                        { 
+                            headerName: "No.", 
+                            valueGetter: "node.rowIndex + 1", 
+                            width: 70,
+                            headerClass: "text-center",
+                            cellClass: "text-center",
+                            pinned: 'left',
+                            suppressSizeToFit: true
+                        },
+                         { 
+                            headerName: "Item", 
+                            field: "item", 
+                            width: 240,
+                            filter: 'agTextColumnFilter',
+                            cellClass: "text-center",
+                        },
+                        { 
+                            headerName: "Initial", 
+                            field: "is_initial", 
+                            width: 160,
+                            filter: 'agNumberColumnFilter',
+                            cellClass: "text-center",
+                        },
+                       { 
+                            headerName: "Transaction Count", 
+                            field: "count", 
+                            width: 200,
+                            filter: 'agNumberColumnFilter',
+                            cellClass: "text-center",
+                            valueFormatter: params => params.value !== undefined && params.value !== null ? params.value.toString() : '0'
+                        },
+                        { 
+                            headerName: "Support", 
+                            field: "support", 
+                            width: 130,
+                            filter: 'agNumberColumnFilter',
+                            cellClass: "text-center",
+                            valueFormatter: params => params.value !== undefined && params.value !== null ? params.value.toFixed(2) : '0.00'
+                        }
+                    ];
+
+                    const gridOptions = {
+                        columnDefs: columnDefs,
+                        rowData: cleanedRowData, // Gunakan data yang sudah dibersihkan
+                        pagination: true,
+                        paginationPageSize: 10,
+                        paginationPageSizeSelector: [10, 25, 50, 100],
+                        defaultColDef: { 
+                            sortable: true, 
+                            filter: true, 
+                            resizable: true,
+                            minWidth: 100,
+                            floatingFilter: true,
+                            suppressMenu: false
+                        },
+                        rowHeight: 40,
+                        animateRows: true,
+                        enableCellTextSelection: true,
+                        ensureDomOrder: true,
+                        sideBar: {
+                            toolPanels: ['columns', 'filters'],
+                            defaultToolPanel: ''
+                        },
+                        statusBar: {
+                            statusPanels: [
+                                { statusPanel: 'agTotalAndFilteredRowCountComponent', align: 'left' },
+                                { statusPanel: 'agTotalRowCountComponent', align: 'center' },
+                                { statusPanel: 'agFilteredRowCountComponent' },
+                                { statusPanel: 'agSelectedRowCountComponent' },
+                                { statusPanel: 'agAggregationComponent' }
+                            ]
+                        },
+                        enableRangeSelection: true,
+                        rowSelection: 'multiple',
+                        suppressRowClickSelection: true
+                    };
+
+                    const gridDiv = document.querySelector('#initialGrid');
+                    if (gridDiv) {
+                        // Bersihkan grid jika sudah ada
+                        if (gridDiv.hasChildNodes()) {
+                            gridDiv.innerHTML = '';
+                        }
+                        
+                        // Tangani error saat membuat grid
+                        try {
+                            agGrid.createGrid(gridDiv, gridOptions);
+                        } catch (error) {
+                            console.error("Error creating grid:", error);
+                            gridDiv.innerHTML = '<div class="p-4 text-red-600">Error loading data table. Please check the console for details.</div>';
+                        }
+                    } else {
+                        console.error("Element dengan ID 'initialGrid' tidak ditemukan");
+                    }
+                });
+            </script>
+        </div>
+    </div>
+
+    <!-- Transaksi Proses Section -->
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-8 border border-gray-100">
+        <div class="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold text-dark">Transaksi Proses</h2>
+                    <p class="mt-1 text-sm text-gray-500">Total {{ transaction_process|length }} transaksi diproses</p>
+                </div>
+                <div class="mt-2 md:mt-0">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white text-blue-700">
+                        <svg class="-ml-1 mr-1.5 h-2 w-2 text-blue-500" fill="currentColor" viewBox="0 0 8 8">
+                            <circle cx="4" cy="4" r="3" />
+                        </svg>
+                        Analisis Transaksi
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="p-6">
+            <div class="mb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              
+            </div>
+            
+
+            <!-- Grid Container -->
+            <div class="overflow-auto rounded-lg border border-gray-200 p-4">
+                <div id="transactionGrid" class="ag-theme-custom" style="height: 300px; width: 100%;"></div>
+            </div>
+
+            <script>
+                $(document).ready(function() {
+                    // Fungsi untuk membersihkan string dari karakter berbahaya
+                    function cleanString(str) {
+                        if (typeof str !== 'string') return '';
+                        return str.replace(/"/g, '&quot;')
+                                 .replace(/'/g, '&#39;')
+                                 .replace(/</g, '&lt;')
+                                 .replace(/>/g, '&gt;')
+                                 .replace(/\\/g, '\\\\');
+                    }
+
+                    // Data dari server dengan penanganan error yang lebih baik
+                    const rowData = [
+                        {% for transaction in transaction_process %}
+                        {
+                            code: "{{ transaction[1]|default('') }}",
+                            transaction: "{{ transaction[2]|default('') }}"
+                        }{% if not loop.last %},{% endif %}
+                        {% endfor %}
+                    ];
+
+                    // Bersihkan data setelah di-load
+                    const cleanedRowData = rowData.map(item => {
+                        return {
+                            code: cleanString(item.code),
+                            transaction: item.transaction
+                        };
+                    });
+
+                    // Konfigurasi kolom AG Grid
+                    const columnDefs = [
+                        { 
+                            headerName: "No.", 
+                            valueGetter: "node.rowIndex + 1", 
+                            width: 100,
+                            headerClass: "text-center",
+                            cellClass: "text-center",
+                            pinned: 'left',
+                            suppressSizeToFit: true
+                        },
+                         { 
+                            headerName: "ID Transaction", 
+                            field: "code", 
+                            width: 235,
+                            filter: 'agTextColumnFilter',
+                            cellClass: "text-center",
+                        },
+                        { 
+                            headerName: "Transaction Process", 
+                            field: "transaction", 
+                            width: 450,
+                            filter: 'agNumberColumnFilter',
+                            cellClass: "text-center",
+                        }
+                    ];
+
+                    const gridOptions = {
+                        columnDefs: columnDefs,
+                        rowData: cleanedRowData, // Gunakan data yang sudah dibersihkan
+                        pagination: true,
+                        paginationPageSize: 10,
+                        paginationPageSizeSelector: [10, 25, 50, 100],
+                        defaultColDef: { 
+                            sortable: true, 
+                            filter: true, 
+                            resizable: true,
+                            minWidth: 100,
+                            flex: 1,
+                            floatingFilter: true,
+                            suppressMenu: false
+                        },
+                        rowHeight: 40,
+                        animateRows: true,
+                        enableCellTextSelection: true,
+                        ensureDomOrder: true,
+                        sideBar: {
+                            toolPanels: ['columns', 'filters'],
+                            defaultToolPanel: ''
+                        },
+                        statusBar: {
+                            statusPanels: [
+                                { statusPanel: 'agTotalAndFilteredRowCountComponent', align: 'left' },
+                                { statusPanel: 'agTotalRowCountComponent', align: 'center' },
+                                { statusPanel: 'agFilteredRowCountComponent' },
+                                { statusPanel: 'agSelectedRowCountComponent' },
+                                { statusPanel: 'agAggregationComponent' }
+                            ]
+                        },
+                        enableRangeSelection: true,
+                        rowSelection: 'multiple',
+                        suppressRowClickSelection: true
+                    };
+
+                    const gridDiv = document.querySelector('#transactionGrid');
+                    if (gridDiv) {
+                        // Bersihkan grid jika sudah ada
+                        if (gridDiv.hasChildNodes()) {
+                            gridDiv.innerHTML = '';
+                        }
+                        
+                        // Tangani error saat membuat grid
+                        try {
+                            agGrid.createGrid(gridDiv, gridOptions);
+                        } catch (error) {
+                            console.error("Error creating grid:", error);
+                            gridDiv.innerHTML = '<div class="p-4 text-red-600">Error loading data table. Please check the console for details.</div>';
+                        }
+                    } else {
+                        console.error("Element dengan ID 'transactionGrid' tidak ditemukan");
+                    }
+                });
+            </script>
+        </div>
+    </div>
+
+    <!-- Tahapan Mining Section -->
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-8 border border-gray-100">
+        <div class="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold text-dark">Tahapan Mining</h2>
+                    <p class="mt-1 text-sm text-gray-500">Total {{ mining_fptree|length }} mining stage</p>
+                </div>
+                <div class="mt-2 md:mt-0">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white text-blue-700">
+                        <svg class="-ml-1 mr-1.5 h-2 w-2 text-blue-500" fill="currentColor" viewBox="0 0 8 8">
+                            <circle cx="4" cy="4" r="3" />
+                        </svg>
+                        Analisis Mining
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="p-6">
+            <div class="mb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              
+            </div>
+            
+
+            <!-- Grid Container -->
+            <div class="overflow-auto rounded-lg border border-gray-200 p-4">
+                <div id="miningGrid" class="ag-theme-custom" style="height: 300px; width: 100%;"></div>
+            </div>
+
+            <script>
+                $(document).ready(function() {
+
+                    // Data dari server dengan penanganan error yang lebih baik
+                    const rowData = [
+                        {% for mining in mining_fptree %}
+                        {
+                            stage: "{{ mining[1]|default('') }}",
+                            item: "{{ mining[2]|default('') }}",
+                            pattern_base: "{{ mining[3]|default('')|safe }}",
+                            level: {{ mining[4]|default(0) }},
+                            tree_item: "{{ mining[5]|default('') }}"
+                        }{% if not loop.last %},{% endif %}
+                        {% endfor %}
+                    ];
+
+                    // Konfigurasi kolom AG Grid
+                    const columnDefs = [
+                        { 
+                            headerName: "No.", 
+                            valueGetter: "node.rowIndex + 1", 
+                            width: 100,
+                            headerClass: "text-center",
+                            cellClass: "text-center",
+                            pinned: 'left',
+                            suppressSizeToFit: true
+                        },
+                         { 
+                            headerName: "Stage", 
+                            field: "stage", 
+                            width: 245,
+                            filter: 'agTextColumnFilter',
+                            cellClass: "text-center",
+                        },
+                        { 
+                            headerName: "Item", 
+                            field: "item", 
+                            width: 170,
+                            filter: 'agNumberColumnFilter',
+                            cellClass: "text-center",
+                        },
+                        { 
+                            headerName: "Pattern Base", 
+                            field: "pattern_base", 
+                            width: 650,
+                            filter: 'agNumberColumnFilter',
+                            cellClass: "text-center",
+                        },
+                        { 
+                            headerName: "Level", 
+                            field: "level", 
+                            width: 150,
+                            filter: 'agNumberColumnFilter',
+                            cellClass: "text-center",
+                            valueFormatter: params => params.value !== undefined && params.value !== null ? params.value.toString() : '0'
+                        },
+                        { 
+                            headerName: "Tree Item", 
+                            field: "tree_item", 
+                            width: 150,
+                            filter: 'agNumberColumnFilter',
+                            cellClass: "text-center",
+                        }
+                    ];
+
+                    const gridOptions = {
+                        columnDefs: columnDefs,
+                        rowData: rowData, 
+                        pagination: true,
+                        paginationPageSize: 10,
+                        paginationPageSizeSelector: [10, 25, 50, 100],
+                        defaultColDef: { 
+                            sortable: true, 
+                            filter: true, 
+                            resizable: true,
+                            minWidth: 100,
+                            wrapText: true,   // ini penting
+                            autoHeight: true,
+                            floatingFilter: true,
+                            suppressMenu: false
+                        },
+                        
+                        animateRows: true,
+                        enableCellTextSelection: true,
+                        ensureDomOrder: true,
+                        sideBar: {
+                            toolPanels: ['columns', 'filters'],
+                            defaultToolPanel: ''
+                        },
+                        statusBar: {
+                            statusPanels: [
+                                { statusPanel: 'agTotalAndFilteredRowCountComponent', align: 'left' },
+                                { statusPanel: 'agTotalRowCountComponent', align: 'center' },
+                                { statusPanel: 'agFilteredRowCountComponent' },
+                                { statusPanel: 'agSelectedRowCountComponent' },
+                                { statusPanel: 'agAggregationComponent' }
+                            ]
+                        },
+                        enableRangeSelection: true,
+                        rowSelection: 'multiple',
+                        suppressRowClickSelection: true
+                    };
+
+                    const gridDiv = document.querySelector('#miningGrid');
+                    if (gridDiv) {
+                        // Bersihkan grid jika sudah ada
+                        if (gridDiv.hasChildNodes()) {
+                            gridDiv.innerHTML = '';
+                        }
+                        
+                        // Tangani error saat membuat grid
+                        try {
+                            agGrid.createGrid(gridDiv, gridOptions);
+                        } catch (error) {
+                            console.error("Error creating grid:", error);
+                            gridDiv.innerHTML = '<div class="p-4 text-red-600">Error loading data table. Please check the console for details.</div>';
+                        }
+                    } else {
+                        console.error("Element dengan ID 'miningGrid' tidak ditemukan");
+                    }
+                });
+            </script>
+        </div>
+    </div>
+
     <!-- Association Rules Section -->
     <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-8 border border-gray-100">
         <div class="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
@@ -423,200 +886,200 @@
             </div>
 
             <script>
-    $(document).ready(function() {
-        // Data dari server
-        const rowData = [
-            {% for rule in association_rule %}
-            {
-                antecedent: "{{ rule[1].split('=>')[0]|trim }}",
-                consequent: "{{ rule[1].split('=>')[1]|trim }}",
-                supportA: {{ rule[2] }},
-                supportB: {{ rule[3] }},
-                confidence: {{ rule[4] }},
-                lift: {{ rule[5] }},
-                correlation: "{{ rule[6] }}",
-                accuracy: {{ rule[7] }},
-                precision: {{ rule[8] }},
-                recall: {{ rule[9] }},
-                f1Score: {{ rule[10] }}
-            }{% if not loop.last %},{% endif %}
-            {% endfor %}
-        ];
+                $(document).ready(function() {
+                    // Data dari server
+                    const rowData = [
+                        {% for rule in association_rule %}
+                        {
+                            antecedent: "{{ rule[1].split('=>')[0]|trim }}",
+                            consequent: "{{ rule[1].split('=>')[1]|trim }}",
+                            supportA: {{ rule[2] }},
+                            supportB: {{ rule[3] }},
+                            confidence: {{ rule[4] }},
+                            lift: {{ rule[5] }},
+                            correlation: "{{ rule[6] }}",
+                            accuracy: {{ rule[7] }},
+                            precision: {{ rule[8] }},
+                            recall: {{ rule[9] }},
+                            f1Score: {{ rule[10] }}
+                        }{% if not loop.last %},{% endif %}
+                        {% endfor %}
+                    ];
 
-        // Konfigurasi kolom AG Grid
-        const columnDefs = [
-            { 
-                headerName: "No.", 
-                valueGetter: "node.rowIndex + 1", 
-                width: 80,
-                headerClass: "text-center",
-                cellClass: "text-center",
-                pinned: 'left',
-                suppressSizeToFit: true
-            },
-            { 
-                headerName: "Rule", 
-                field: "antecedent", 
-                width: 350,
-                filter: 'agTextColumnFilter',
-                cellRenderer: function(params) {
-                    const antecedent = params.data.antecedent || "";
-                    const consequent = params.data.consequent || "";
-                    return `
-                        <div class="text-sm font-medium text-gray-900">
-                            <span class="text-blue-600">${antecedent}</span> 
-                            <span class="mx-1 text-gray-400">=></span> 
-                            <span class="text-green-600">${consequent}</span>
-                        </div>
-                    `;
-                }
-            },
-            { 
-                headerName: "Support A", 
-                field: "supportA", 
-                width: 120, 
-                filter: 'agNumberColumnFilter', 
-                cellClass: "text-center", 
-                valueFormatter: params => params.value !== undefined ? params.value.toFixed(2) : ''
-            },
-            { 
-                headerName: "Support B", 
-                field: "supportB", 
-                width: 120, 
-                filter: 'agNumberColumnFilter', 
-                cellClass: "text-center", 
-                valueFormatter: params => params.value !== undefined ? params.value.toFixed(2) : ''
-            },
-            { 
-                headerName: "Confidence", 
-                field: "confidence", 
-                width: 180, 
-                filter: 'agNumberColumnFilter',
-                cellRenderer: function(params) {
-                    if (params.value == null) return '';
-                    const percentage = Math.round(params.value * 100);
-                    return `
-                        <div class="flex items-center">
-                            <div class="h-2 w-20 bg-gray-200 rounded-full overflow-hidden">
-                                <div class="h-full bg-teal-600" style="width: ${percentage}%"></div>
-                            </div>
-                            <span class="ml-2 text-sm font-medium text-gray-900">${params.value.toFixed(2)}</span>
-                        </div>
-                    `;
-                }
-            },
-            { 
-                headerName: "Lift", 
-                field: "lift", 
-                width: 120, 
-                filter: 'agNumberColumnFilter',
-                cellRenderer: function(params) {
-                    if (params.value == null) return '';
-                    const liftValue = params.value;
-                    const isHigh = liftValue > 1.20;
-                    return `
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                            ${isHigh ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
-                            ${liftValue.toFixed(2)}
-                        </span>
-                    `;
-                }
-            },
-            { 
-                headerName: "Korelasi", 
-                field: "correlation", 
-                width: 130, 
-                filter: 'agTextColumnFilter',
-                cellRenderer: function(params) {
-                    const correlation = params.value || '';
-                    let bgClass = 'bg-gray-100 text-gray-800';
-                    if (correlation === 'Positif') bgClass = 'bg-green-100 text-green-800';
-                    else if (correlation === 'Negatif') bgClass = 'bg-red-100 text-red-800';
-                    return `
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${bgClass}">
-                            ${correlation}
-                        </span>
-                    `;
-                }
-            },
-            { 
-                headerName: "Accuracy", 
-                field: "accuracy", 
-                width: 120, 
-                filter: 'agNumberColumnFilter', 
-                cellClass: "text-center", 
-                valueFormatter: params => params.value !== undefined ? params.value.toFixed(2) : ''
-            },
-            { 
-                headerName: "Precision", 
-                field: "precision", 
-                width: 120, 
-                filter: 'agNumberColumnFilter', 
-                cellClass: "text-center", 
-                valueFormatter: params => params.value !== undefined ? params.value.toFixed(2) : ''
-            },
-            { 
-                headerName: "Recall", 
-                field: "recall", 
-                width: 120, 
-                filter: 'agNumberColumnFilter', 
-                cellClass: "text-center", 
-                valueFormatter: params => params.value !== undefined ? params.value.toFixed(2) : ''
-            },
-            { 
-                headerName: "F1-Score", 
-                field: "f1Score", 
-                width: 120, 
-                filter: 'agNumberColumnFilter', 
-                cellClass: "text-center", 
-                valueFormatter: params => params.value !== undefined ? params.value.toFixed(2) : ''
-            }
-        ];
+                    // Konfigurasi kolom AG Grid
+                    const columnDefs = [
+                        { 
+                            headerName: "No.", 
+                            valueGetter: "node.rowIndex + 1", 
+                            width: 80,
+                            headerClass: "text-center",
+                            cellClass: "text-center",
+                            pinned: 'left',
+                            suppressSizeToFit: true
+                        },
+                        { 
+                            headerName: "Rule", 
+                            field: "antecedent", 
+                            width: 350,
+                            filter: 'agTextColumnFilter',
+                            cellRenderer: function(params) {
+                                const antecedent = params.data.antecedent || "";
+                                const consequent = params.data.consequent || "";
+                                return `
+                                    <div class="text-sm font-medium text-gray-900">
+                                        <span class="text-blue-600">${antecedent}</span> 
+                                        <span class="mx-1 text-gray-400">=></span> 
+                                        <span class="text-green-600">${consequent}</span>
+                                    </div>
+                                `;
+                            }
+                        },
+                        { 
+                            headerName: "Support A", 
+                            field: "supportA", 
+                            width: 120, 
+                            filter: 'agNumberColumnFilter', 
+                            cellClass: "text-center", 
+                            valueFormatter: params => params.value !== undefined ? params.value.toFixed(2) : ''
+                        },
+                        { 
+                            headerName: "Support B", 
+                            field: "supportB", 
+                            width: 120, 
+                            filter: 'agNumberColumnFilter', 
+                            cellClass: "text-center", 
+                            valueFormatter: params => params.value !== undefined ? params.value.toFixed(2) : ''
+                        },
+                        { 
+                            headerName: "Confidence", 
+                            field: "confidence", 
+                            width: 180, 
+                            filter: 'agNumberColumnFilter',
+                            cellRenderer: function(params) {
+                                if (params.value == null) return '';
+                                const percentage = Math.round(params.value * 100);
+                                return `
+                                    <div class="flex items-center">
+                                        <div class="h-2 w-20 bg-gray-200 rounded-full overflow-hidden">
+                                            <div class="h-full bg-teal-600" style="width: ${percentage}%"></div>
+                                        </div>
+                                        <span class="ml-2 text-sm font-medium text-gray-900">${params.value.toFixed(2)}</span>
+                                    </div>
+                                `;
+                            }
+                        },
+                        { 
+                            headerName: "Lift", 
+                            field: "lift", 
+                            width: 120, 
+                            filter: 'agNumberColumnFilter',
+                            cellRenderer: function(params) {
+                                if (params.value == null) return '';
+                                const liftValue = params.value;
+                                const isHigh = liftValue > 1.20;
+                                return `
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                        ${isHigh ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
+                                        ${liftValue.toFixed(2)}
+                                    </span>
+                                `;
+                            }
+                        },
+                        { 
+                            headerName: "Korelasi", 
+                            field: "correlation", 
+                            width: 130, 
+                            filter: 'agTextColumnFilter',
+                            cellRenderer: function(params) {
+                                const correlation = params.value || '';
+                                let bgClass = 'bg-gray-100 text-gray-800';
+                                if (correlation === 'Positif') bgClass = 'bg-green-100 text-green-800';
+                                else if (correlation === 'Negatif') bgClass = 'bg-red-100 text-red-800';
+                                return `
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${bgClass}">
+                                        ${correlation}
+                                    </span>
+                                `;
+                            }
+                        },
+                        { 
+                            headerName: "Accuracy", 
+                            field: "accuracy", 
+                            width: 120, 
+                            filter: 'agNumberColumnFilter', 
+                            cellClass: "text-center", 
+                            valueFormatter: params => params.value !== undefined ? params.value.toFixed(2) : ''
+                        },
+                        { 
+                            headerName: "Precision", 
+                            field: "precision", 
+                            width: 120, 
+                            filter: 'agNumberColumnFilter', 
+                            cellClass: "text-center", 
+                            valueFormatter: params => params.value !== undefined ? params.value.toFixed(2) : ''
+                        },
+                        { 
+                            headerName: "Recall", 
+                            field: "recall", 
+                            width: 120, 
+                            filter: 'agNumberColumnFilter', 
+                            cellClass: "text-center", 
+                            valueFormatter: params => params.value !== undefined ? params.value.toFixed(2) : ''
+                        },
+                        { 
+                            headerName: "F1-Score", 
+                            field: "f1Score", 
+                            width: 120, 
+                            filter: 'agNumberColumnFilter', 
+                            cellClass: "text-center", 
+                            valueFormatter: params => params.value !== undefined ? params.value.toFixed(2) : ''
+                        }
+                    ];
 
-        const gridOptions = {
-            columnDefs: columnDefs,
-            rowData: rowData,
-            pagination: true,
-            paginationPageSize: 10,
-            paginationPageSizeSelector: [10, 25, 50, 100],
-            defaultColDef: { 
-                sortable: true, 
-                filter: true, 
-                resizable: true,
-                minWidth: 100,
-                floatingFilter: true,
-                suppressMenu: false
-            },
-            rowHeight: 40,
-            animateRows: true,
-            enableCellTextSelection: true,
-            ensureDomOrder: true,
-            sideBar: {
-                toolPanels: ['columns', 'filters'],
-                defaultToolPanel: ''
-            },
-            statusBar: {
-                statusPanels: [
-                    { statusPanel: 'agTotalAndFilteredRowCountComponent', align: 'left' },
-                    { statusPanel: 'agTotalRowCountComponent', align: 'center' },
-                    { statusPanel: 'agFilteredRowCountComponent' },
-                    { statusPanel: 'agSelectedRowCountComponent' },
-                    { statusPanel: 'agAggregationComponent' }
-                ]
-            },
-            enableRangeSelection: true,
-            rowSelection: 'multiple',
-            suppressRowClickSelection: true
-        };
+                    const gridOptions = {
+                        columnDefs: columnDefs,
+                        rowData: rowData,
+                        pagination: true,
+                        paginationPageSize: 10,
+                        paginationPageSizeSelector: [10, 25, 50, 100],
+                        defaultColDef: { 
+                            sortable: true, 
+                            filter: true, 
+                            resizable: true,
+                            minWidth: 100,
+                            floatingFilter: true,
+                            suppressMenu: false
+                        },
+                        rowHeight: 40,
+                        animateRows: true,
+                        enableCellTextSelection: true,
+                        ensureDomOrder: true,
+                        sideBar: {
+                            toolPanels: ['columns', 'filters'],
+                            defaultToolPanel: ''
+                        },
+                        statusBar: {
+                            statusPanels: [
+                                { statusPanel: 'agTotalAndFilteredRowCountComponent', align: 'left' },
+                                { statusPanel: 'agTotalRowCountComponent', align: 'center' },
+                                { statusPanel: 'agFilteredRowCountComponent' },
+                                { statusPanel: 'agSelectedRowCountComponent' },
+                                { statusPanel: 'agAggregationComponent' }
+                            ]
+                        },
+                        enableRangeSelection: true,
+                        rowSelection: 'multiple',
+                        suppressRowClickSelection: true
+                    };
 
-        const gridDiv = document.querySelector('#associationRulesGrid');
-        if (gridDiv) {
-            agGrid.createGrid(gridDiv, gridOptions);
-        } else {
-            console.error("Element dengan ID 'associationRulesGrid' tidak ditemukan");
-        }
-    });
-</script>
+                    const gridDiv = document.querySelector('#associationRulesGrid');
+                    if (gridDiv) {
+                        agGrid.createGrid(gridDiv, gridOptions);
+                    } else {
+                        console.error("Element dengan ID 'associationRulesGrid' tidak ditemukan");
+                    }
+                });
+            </script>
 
 
         </div>

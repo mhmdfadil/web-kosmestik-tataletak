@@ -15,6 +15,8 @@ class PreprocessingController:
         try:
             db = get_db()
             cursor = db.cursor()
+            cursor.execute("SELECT * FROM users WHERE id = %s", (session['user_id'],))
+            user = cursor.fetchone()
             # Mengambil hanya 1 data pertama dari tabel file_infos
             cursor.execute('SELECT * FROM file_infos LIMIT 1')
             file_info = cursor.fetchone()
@@ -25,6 +27,7 @@ class PreprocessingController:
             return render_template(
                 'pages/preprocessing.html', 
                 header_title='Pemrosesan Data',
+                user=user,
                 process=process,
                 file_info=file_info  # Mengirim 1 data file_info ke template
             )
@@ -65,6 +68,8 @@ class PreprocessingController:
         try:
             db = get_db()
             cursor = db.cursor()
+            cursor.execute("SELECT * FROM users WHERE id = %s", (session['user_id'],))
+            user = cursor.fetchone()
             # Get all transactions ordered by year
             cursor.execute('SELECT code_transaction, year, item FROM data_transactions ORDER BY id')
             transactions = cursor.fetchall()
@@ -79,6 +84,7 @@ class PreprocessingController:
             return render_template(
                 'pages/preprocessing_split.html', 
                 header_title='Pemrosesan: Split Data',
+                user=user,
                 transactions=transactions,
                 max_items=max_items
             )
@@ -94,6 +100,8 @@ class PreprocessingController:
         try:
             db = get_db()
             cursor = db.cursor()
+            cursor.execute("SELECT * FROM users WHERE id = %s", (session['user_id'],))
+            user = cursor.fetchone()
             cursor.execute('SELECT item FROM data_transactions')
             data_transaction = cursor.fetchall()
             
@@ -106,6 +114,7 @@ class PreprocessingController:
             return render_template(
                 'pages/preprocessing_basket.html', 
                 header_title='Pemrosesan: Basket Data',
+                user=user,
                 data_transaction=data_transaction,
                 basket_data=basket_data
             )
@@ -121,6 +130,9 @@ class PreprocessingController:
         try:
             db = get_db()
             cursor = db.cursor()
+
+            cursor.execute("SELECT * FROM users WHERE id = %s", (session['user_id'],))
+            user = cursor.fetchone()
             
             # Get all transactions
             cursor.execute('SELECT code_transaction, item FROM data_transactions')
@@ -145,6 +157,7 @@ class PreprocessingController:
             return render_template(
                 'pages/preprocessing_onehot.html', 
                 header_title='Pemrosesan: One Hot Data',
+                user=user,
                 unique_items=unique_items,
                 transactions=transactions,
                 onehot_data=onehot_data

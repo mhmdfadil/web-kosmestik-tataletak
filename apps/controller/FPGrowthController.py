@@ -152,6 +152,7 @@ class FPGrowthController:
             db = get_db()
             cursor = db.cursor()
             
+            start_time = time.time()
             
             # Get process status
             cursor.execute('SELECT * FROM process LIMIT 1')
@@ -166,7 +167,7 @@ class FPGrowthController:
                 
             min_support = setup[0]
             min_confidence = setup[1]
-
+            
             # Get all transactions
             cursor.execute('SELECT code_transaction, item FROM data_transactions')
             transactions_data = cursor.fetchall()
@@ -177,7 +178,7 @@ class FPGrowthController:
             total_transactions = len(transactions)
             min_support_count = int(min_support * total_transactions)
 
-            start_time = time.time()
+            
             # ==================================
             # STEP 1: Frequent 1-itemsets
             # ==================================
@@ -242,6 +243,8 @@ class FPGrowthController:
             # Create reverse mapping for lookup
             initial_to_item = {v: k for k, v in item_initials.items()}
 
+            
+
             # ==================================
             # STEP 3: Processed Transactions
             # ==================================
@@ -258,6 +261,7 @@ class FPGrowthController:
                     (transaction_code, ordered_transaction) 
                     VALUES (%s, %s)''',
                     (code, ordered_transaction))
+                
             
             # ==================================
             # STEP 4: FP-Tree Construction and Mining
@@ -536,9 +540,28 @@ class FPGrowthController:
                 SELECT df.*, f.name as frequent_name 
                 FROM detail_frequent_fp df 
                 JOIN frequent_fp f ON df.frequent_id = f.id 
-                ORDER BY f.id, df.id
+                ORDER BY f.id, df.item
             ''')
             detail_frequent_fp = cursor.fetchall()
+
+            cursor.execute("SELECT * FROM users WHERE id = %s", (session['user_id'],))
+            user = cursor.fetchone()
+            
+            # Get item_initials
+            cursor.execute('SELECT * FROM item_initial_fp ORDER BY item')
+            item_initial = cursor.fetchall()
+
+            # Get transaction_process
+            cursor.execute('SELECT * FROM transaction_process_fp ORDER BY id')
+            transaction_process = cursor.fetchall()
+
+            # Get fp-tree
+            cursor.execute('SELECT ordered_transaction FROM transaction_process_fp ORDER BY id')
+            fp_tree = cursor.fetchall()
+
+            # Get mining_fptree
+            cursor.execute('SELECT * FROM mining_fptree_fp ORDER BY id')
+            mining_fptree = cursor.fetchall()
             
             # Get association rules
             cursor.execute('SELECT * FROM association_rule_fp ORDER BY id')
@@ -558,8 +581,13 @@ class FPGrowthController:
             return render_template(
                 'pages/calculate_fpgrowth.html',
                 header_title='Perhitungan FP-Growth',
+                user=user,
                 frequent_fp=frequent_fp,
                 detail_frequent_fp=detail_frequent_fp,
+                item_initial=item_initial,
+                transaction_process=transaction_process,
+                mining_fptree=mining_fptree,
+                fp_tree=fp_tree,
                 association_rule=association_rule,
                 metric=metric,
                 file_info=file_info,
@@ -577,6 +605,9 @@ class FPGrowthController:
         try:
             db = get_db()
             cursor = db.cursor()
+
+            cursor.execute("SELECT * FROM users WHERE id = %s", (session['user_id'],))
+            user = cursor.fetchone()
             
             # Get file info
             cursor.execute('SELECT * FROM file_infos LIMIT 1')
@@ -594,12 +625,13 @@ class FPGrowthController:
                 'pages/fp_growth.html', 
                 header_title='Algoritma FP-Growth', 
                 process=process, 
+                user=user,
                 file_info=file_info, 
                 setup=setup
             )
         except Exception as e:
             flash(f'Terjadi kesalahan: {str(e)}', 'error')
-            return redirect(url_for('routes.dashboard'))
+            return redirect(url_for('routes.fpgrowth'))
         finally:
             if cursor:
                 cursor.close()

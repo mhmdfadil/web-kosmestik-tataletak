@@ -17,7 +17,7 @@ class AprioriController:
         try:
             db = get_db()
             cursor = db.cursor()
-            start_time = time.time()
+            
             
             # Get process status
             cursor.execute('SELECT * FROM process LIMIT 1')
@@ -63,6 +63,8 @@ class AprioriController:
             # Create one-hot encoded matrix using pandas
             item_list = sorted(list(all_items))
             df = pd.DataFrame(0, index=range(total_transactions), columns=item_list)
+
+            start_time = time.time()
             
             for i, transaction in enumerate(transactions):
                 for item in transaction:
@@ -89,6 +91,8 @@ class AprioriController:
                     support_count = np.sum(np.all(transaction_matrix[:, itemset_indices], axis=1))
                 return support_count, support_count / total_transactions
             
+            
+
             # Step 1: Find frequent 1-itemsets
             frequent_itemsets = {}
             frequent_results = {}
@@ -353,6 +357,9 @@ class AprioriController:
         try:
             db = get_db()
             cursor = db.cursor()
+
+            cursor.execute("SELECT * FROM users WHERE id = %s", (session['user_id'],))
+            user = cursor.fetchone()
             
             # Get setup parameters
             cursor.execute('SELECT min_support_ap, min_confidance_ap FROM setups LIMIT 1')
@@ -401,6 +408,7 @@ class AprioriController:
             return render_template(
                 'pages/calculate_apriori.html',
                 header_title='Perhitungan Apriori',
+                user=user,
                 frequent_ap=frequent_ap,
                 detail_frequent_ap=detail_frequent_ap,
                 association_rule=association_rule,
@@ -420,6 +428,10 @@ class AprioriController:
         try:
             db = get_db()
             cursor = db.cursor()
+
+            cursor.execute("SELECT * FROM users WHERE id = %s", (session['user_id'],))
+            user = cursor.fetchone()
+
             cursor.execute('SELECT * FROM file_infos LIMIT 1')
             file_info = cursor.fetchone()
             
@@ -432,13 +444,14 @@ class AprioriController:
             return render_template(
                 'pages/apriori.html', 
                 header_title='Algoritma Apriori', 
+                user=user,
                 process=process, 
                 file_info=file_info, 
                 setup=setup
             )
         except Exception as e:
             flash(f'Terjadi kesalahan: {str(e)}', 'error')
-            return redirect(url_for('routes.dashboard'))
+            return redirect(url_for('routes.apriori'))
         finally:
             if cursor:
                 cursor.close()

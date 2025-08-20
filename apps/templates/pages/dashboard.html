@@ -3,7 +3,7 @@
 {% block content %}
 
 <!-- Content area -->
- <div class="p-8 max-w-[980px]">
+ <div class="p-8 max-w-full">
   <section class="p-1 mx-auto mb-7">
       <h2 class="content-title text-green-900 text-xl md:text-3xl font-bold text-center" lang="id">
           Selamat Datang di Dashboard Rekomendasi <br class="hidden md:block" />
@@ -217,7 +217,7 @@ document.addEventListener('DOMContentLoaded', function() {
         class="flex-1 text-white bg-pink-400 hover:bg-pink-500 font-semibold rounded-xl py-3 px-6 transition-colors duration-300 focus:outline-none focus:ring-4 focus:ring-pink-300">
         + Input Data Baru
       </button>
-      <button type="button"
+      <button type="button" onclick="window.location.href='{{ url_for('routes.result') }}'"
         class="flex-1 bg-purple-200 text-purple-900 hover:bg-purple-300 font-semibold rounded-xl py-3 px-6 transition-colors duration-300 focus:outline-none focus:ring-4 focus:ring-purple-300">
         Lihat Hasil Analisis
       </button>
