@@ -1,0 +1,86 @@
+<!-- Sidebar -->
+<aside class="sidebar w-80 flex flex-col p-6">
+    <!-- Logo with shadow -->
+    <div class="mb-8">
+        <img 
+            src="https://bhimbvfirtmnovvtcjxo.supabase.co/storage/v1/object/public/assets/images/Brown%20Make%20up%20&%20Cosmetic%20Store%20Logo%20Kit%201.png" 
+            alt="Logo berwarna biru toska dengan gambar tangan memegang kosmetik dan tulisan melingkar" 
+            class="w-20 h-20" 
+            onerror="this.style.display='none'"
+        />
+    </div>
+
+    <!-- Navigation Menu -->
+    <nav class="flex-grow">
+        <ul class="flex flex-col space-y-4 text-green-900">
+            <li class="nav-item flex items-center {{ 'active' if request.path == url_for('routes.dashboard') }}">
+                <a href="{{ url_for('routes.dashboard') }}" class="flex items-center w-full">
+                    <span class="icon-container" aria-hidden="true">
+                        <!-- Home icon -->
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10 2L3 9h2v7h4v-4h2v4h4V9h2L10 2z" />
+                        </svg>
+                    </span>
+                    <span class="ml-2">Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item flex items-center {{ 'active' if request.path == url_for('routes.input') }}">
+                <a href="{{ url_for('routes.input') }}" class="flex items-center w-full">
+                    <span class="icon-container" aria-hidden="true">
+                        <!-- Folder icon -->
+                        📂
+                    </span>
+                    <span class="ml-2">Input Data</span>
+                </a>
+            </li>
+           <li class="nav-item flex items-center {% if 'preprocessing' in request.path %}active{% endif %}">
+                <a href="{{ url_for('routes.preprocessing') }}" class="flex items-center w-full">
+                    <span class="icon-container" aria-hidden="true">
+                        <!-- Refresh/sync icon -->
+                        🔄
+                    </span>
+                    <span class="ml-2">Pemrosesan Data</span>
+                </a>
+            </li>
+            <li class="nav-item flex items-center {{ 'active' if request.path == url_for('routes.apriori') or request.path == url_for('routes.calculate_apriori') }}">
+                <a href="{{ url_for('routes.apriori') }}" class="flex items-center w-full">
+                    <span class="icon-container" aria-hidden="true">
+                        <!-- Gear icon for Algoritma Apriori -->
+                        ⚙️
+                    </span>
+                    <span class="ml-2">Algoritma Apriori</span>
+                </a>
+            </li>
+            <li class="nav-item flex items-center {{ 'active' if request.path == url_for('routes.fpgrowth') or request.path == url_for('routes.calculate_apriori') }}">
+                <a href="{{ url_for('routes.fpgrowth') }}" class="flex items-center w-full">
+                    <span class="icon-container" aria-hidden="true">
+                        <!-- Gear icon with simplified different style for FP-Growth -->
+                        ⚙️
+                    </span>
+                    <span class="ml-2">Algoritma FP-Growth</span>
+                </a>
+            </li>
+            <li class="nav-item flex items-center {{ 'active' if request.path == url_for('routes.result') }}">
+                <a href="{{ url_for('routes.result') }}" class="flex items-center w-full">
+                    <span class="icon-container" aria-hidden="true">
+                        <!-- Chart bar icon -->
+                        📊
+                    </span>
+                    <span class="ml-2">Hasil</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Logout Button -->
+    <div class="">
+        <button class="flex btn-logout" onclick="window.location.href='{{ url_for('routes.logout') }}'">
+          <svg class="icon-logout ml-4 mt-1" viewBox="0 0 24 24" fill="none" width="24" height="24">
+            <path d="M16 17l5-5-5-5" stroke="white"></path>
+            <path d="M21 12H9" stroke="white"></path>
+            <path d="M13 19v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2" stroke="white"></path>
+          </svg>
+          <p class="ml-2">Logout</p>
+        </button>
+    </div>
+</aside>

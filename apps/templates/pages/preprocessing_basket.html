@@ -1,0 +1,171 @@
+{% extends "/layouts/app.html" %}
+
+{% block content %}
+<!-- Content area -->
+<section class="p-4 md:p-6 mx-auto">
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden max-w-full">
+        <!-- Header - Matching the first example's style -->
+        <div class="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h2 class="text-2xl md:text-3xl font-bold text-gray-800">Basket Data Transaksi</h2>
+                    <p class="text-gray-600 mt-1">Representasi basket / array dari produk dalam setiap transaksi</p>
+                </div>
+                <div class="mt-3 md:mt-0">
+                    <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-semibold">
+                        Total: {{ basket_data|length }} transaksi
+                </div>
+            </div>
+        </div>
+        
+        <!-- Enhanced Code Display with Elegant Gray Theme -->
+        <div class="p-6">
+            <div class="relative rounded-lg overflow-hidden shadow-xl" style="background: linear-gradient(145deg, #f0f2f5, #e4e7eb); border: 1px solid #e2e8f0;">
+                <!-- Code Header Bar -->
+                <div class="flex items-center justify-between px-4 py-5 bg-gray-100 border-b border-gray-200">
+                    <div class="flex space-x-2">
+                        <div class="w-3 h-3 rounded-full bg-red-400"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-400"></div>
+                    </div>
+                    <div class="text-xs font-mono text-gray-500">
+                        JSON DATA
+                    </div>
+                    <div class="w-12"></div> <!-- Spacer for balance -->
+                </div>
+                
+                <!-- Copy Button -->
+                <div class="absolute top-3 right-3 z-10">
+                    <button id="copyButton" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-1 rounded-md text-sm font-medium transition-all duration-200 flex items-center shadow-sm hover:shadow-md border border-gray-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                        </svg>
+                        Salin
+                    </button>
+                </div>
+                
+                <!-- Code Content with Scroll -->
+                <div class="overflow-y-auto" style="max-height: 500px;">
+                    <pre class="text-gray-700 font-mono text-sm p-4 m-0" style="background: rgba(247, 248, 250, 0.1);"><code id="codeContent"> [
+    {% for items in basket_data %}
+    [
+        {% for item in items %}
+        "{{ item }}"{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ]{% if not loop.last %},{% endif %}
+    {% endfor %}
+ ]</code></pre>
+                </div>
+                
+                <!-- Status Bar -->
+                <div class="px-4 py-2 bg-gray-100 border-t border-gray-200 text-xs text-gray-500 font-mono flex justify-between items-center">
+                    <div>
+                        <span class="hidden sm:inline">JSON Format</span>
+                    </div>
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        {{ basket_data|length }} items
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Enhanced Information Box -->
+        <div class="p-6 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 rounded-b-lg">
+            <div class="flex items-start">
+                <div class="flex-shrink-0 pt-0.5">
+                    <svg class="h-5 w-5 text-gray-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-gray-800">Informasi Data</h3>
+                    <div class="mt-1 text-sm text-gray-600">
+                        <p>Klik tombol "Salin" untuk menyalin data keranjang ke clipboard.</p>
+                        <p class="mt-1">Data diformat sebagai array 2D di mana setiap sub-array mewakili item transaksi.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+document.getElementById('copyButton').addEventListener('click', function() {
+    const codeContent = document.getElementById('codeContent').textContent;
+    navigator.clipboard.writeText(codeContent).then(function() {
+        const originalText = this.innerHTML;
+        this.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>Tersalin!';
+        
+        // Enhanced visual feedback
+        this.classList.remove('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+        this.classList.add('bg-green-500', 'text-white', 'hover:bg-green-600');
+        this.querySelector('svg').classList.add('text-white');
+        
+        setTimeout(() => {
+            this.innerHTML = originalText;
+            this.classList.remove('bg-green-500', 'text-white', 'hover:bg-green-600');
+            this.classList.add('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+        }, 2000);
+    }.bind(this));
+});
+</script>
+
+<style>
+/* Custom scrollbar for code block */
+pre {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e0 #f7fafc;
+}
+
+pre::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+}
+
+pre::-webkit-scrollbar-track {
+    background: #f7fafc;
+    border-radius: 4px;
+}
+
+pre::-webkit-scrollbar-thumb {
+    background: #cbd5e0;
+    border-radius: 4px;
+    border: 2px solid #f7fafc;
+}
+
+pre::-webkit-scrollbar-thumb:hover {
+    background: #a0aec0;
+}
+
+/* Beautiful syntax highlighting for the code */
+code {
+    color: #2d3748;
+    position: relative;
+}
+
+code:before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(to bottom, #e2e8f0, #cbd5e0, #e2e8f0);
+    border-radius: 2px;
+}
+
+/* Subtle animation for the code box */
+.relative {
+    transition: all 0.3s ease;
+}
+
+.relative:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+</style>
+
+{% endblock %}

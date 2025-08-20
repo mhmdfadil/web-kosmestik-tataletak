@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dashboard Rekomendasi Tata Letak Kosmetik</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+</head>
+<body class="flex bg-gray-100">
+    {% include 'layouts/sidebar.html' %}
+    
+    <!-- Overlay for mobile sidebar -->
+    <div class="sidebar-overlay"></div>
+
+    <!-- Main Content -->
+    <main class="flex-1 min-h-screen bg-gray-50">
+        {% include 'layouts/header.html' %}
+        
+        {% block content %}
+            {# Default content goes here #}
+            {% include 'content/dashboard.html' %}
+        {% endblock %}
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // Sidebar toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuToggle = document.getElementById('menuToggle');
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            
+            menuToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('sidebar-open');
+            });
+            
+            overlay.addEventListener('click', function() {
+                sidebar.classList.remove('sidebar-open');
+            });
+            
+            // Close sidebar when clicking on a nav item in mobile view
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    if (window.innerWidth <= 768) {
+                        sidebar.classList.remove('sidebar-open');
+                    }
+                });
+            });
+
+            // Profile dropdown functionality
+            const profileIcon = document.getElementById('profileIcon');
+            const profileDropdown = document.getElementById('profileDropdown');
+            
+            profileIcon.addEventListener('click', function(e) {
+                e.stopPropagation();
+                profileDropdown.classList.toggle('show');
+            });
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function() {
+                profileDropdown.classList.remove('show');
+            });
+            
+            // Prevent dropdown from closing when clicking inside it
+            profileDropdown.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+        });
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rekomendasi Tata Letak Barang Kosmetik</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Custom green text for headings and paragraphs */
+    .text-darkgreen {
+      color: #325233;
+    }
+    
+    /* Button styles */
+    .btn-main {
+      background-color: #a0aa75;
+      color: #e9eadf;
+      font-family: monospace;
+      font-size: 1.325rem;
+      font-weight: 700;
+      padding: 0.75rem 3rem;
+      border-radius: 9999px;
+      transition: background-color 0.3s ease;
+    }
+    .btn-main:hover,
+    .btn-main:focus {
+      background-color: #8a9670;
+      outline: none;
+    }
+    
+    /* Box shadow */
+    .shadow-soft {
+      box-shadow: 0 4px 14px rgba(0,0,0,0.28);
+    }
+    
+    /* Emoji size */
+    .light {
+      width: 50px;
+      height: 50px;
+    }
+    
+    /* Responsive text sizes */
+    @media (max-width: 768px) {
+      h1.welcome {
+        font-size: 2.2em;
+      }
+      p.desc, p.desc-title {
+        font-size: 18px;
+      }
+      h2.sub-title {
+        font-size: 1.6em;
+      }
+      .desc-tinfo {
+        font-size: 1.3em;
+      }
+      .desc-info {
+        font-size: 18px;
+      }
+      .btn-main {
+        font-size: 1.1rem;
+        padding: 0.6rem 2rem;
+      }
+    }
+    
+    @media (max-width: 640px) {
+      h1.welcome {
+        font-size: 1.8em;
+      }
+      nav a {
+        font-size: 1.1em;
+      }
+    }
+  </style>
+</head>
+<body class="bg-[#f0f1ed] min-h-screen flex flex-col font-['Poppins',sans-serif]">
+
+  <!-- Navbar -->
+  <nav class="bg-[#a9d5cb] shadow-soft px-4 sm:px-8 py-4 flex justify-center sm:justify-end gap-4 sm:gap-12 text-lg text-[#18321f] font-semibold">
+    <a href="{{ url_for('routes.landing') }}" class="hover:underline">Home</a>
+    <a href="{{ url_for('routes.signup') }}" class="hover:underline">Sign Up</a>
+    <a href="{{ url_for('routes.login') }}" class="hover:underline">Login</a>
+  </nav>
+
+  <!-- Main content -->
+  <main class="container mx-auto px-4 sm:px-6">
+    <section class="md:grid md:grid-cols-12 gap-6 mt-8 md:mt-10">
+      <!-- Left Column for Text -->
+      <div class="md:col-span-7 order-2 md:order-1 mt-6 md:mt-0">
+        <h1 class="text-darkgreen welcome text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6 leading-tight">
+          Selamat Datang<br />
+          Di Rekomendasi Tata<br />
+          Letak Barang Kosmetik
+        </h1>
+        <p class="text-darkgreen desc text-lg md:text-xl mb-6 md:mb-8 max-w-[43rem] leading-relaxed">
+          Tingkatkan penjualan dan pengalaman pelanggan dengan tata letak cerdas
+        </p>
+      </div>
+
+      <!-- Right Column for Image -->
+      <div class="md:col-span-5 flex justify-center order-1 md:order-2">
+        <img
+          src="https://bhimbvfirtmnovvtcjxo.supabase.co/storage/v1/object/public/assets/images/landing-1.png"
+          alt="Ilustrasi wanita sedang memakai lipstik di depan cermin dengan rak kosmetik penuh produk di latar belakang dengan warna dominan ungu dan pink dalam gaya flat design"
+          class="w-full max-w-md md:max-w-none max-h-[280px] md:max-h-[320px] rounded-md object-contain"
+          onerror="this.onerror=null;this.src='https://bhimbvfirtmnovvtcjxo.supabase.co/storage/v1/object/public/assets/images/landing-1.png';"
+        />
+      </div>
+    </section>
+
+    <section class="mt-8 md:mt-12">
+      <h2 class="text-darkgreen sub-title text-2xl md:text-3xl font-bold flex items-center mb-4">
+        <span class="light mr-2">
+          💡
+        </span>
+        Tentang sistem ini
+      </h2>
+      <p class="text-darkgreen desc-title text-lg md:text-xl leading-relaxed mb-8 md:mb-10">
+        Sistem ini dirancang untuk membantu toko kosmetik menata barang dengan strategi yang lebih efektif dan berbasis data, menggunakan algoritma Apriori dan FP-Growth untuk menganalisis pola pembelian pelanggan, dan mengetahui produk mana yang sering dibeli bersamaan, sehingga penempatan produk dapat disesuaikan agar lebih mudah ditemukan pelanggan.
+      </p>
+    </section>
+
+    <section class="mb-12 md:mb-16">
+      <!-- Info columns -->
+      <div class="flex flex-col md:flex-row gap-6 mb-10">
+        <!-- Column 1: System Benefits -->
+        <div class="md:flex-1">
+          <div class="overflow-hidden rounded-md">
+            <img
+              src="https://bhimbvfirtmnovvtcjxo.supabase.co/storage/v1/object/public/assets/images/landing-2.png"
+              alt="Ilustrasi manfaat sistem"
+              class="w-full h-auto"
+              onerror="this.onerror=null;this.src='https://bhimbvfirtmnovvtcjxo.supabase.co/storage/v1/object/public/assets/images/landing-2.png';"
+            />
+          </div>
+          <h3 class="mt-4 desc-tinfo text-xl md:text-2xl font-bold text-darkgreen">Manfaat Sistem</h3>
+          <p class="text-darkgreen desc-info text-lg md:text-xl leading-relaxed mt-2">
+            Memberikan rekomendasi tata letak berdasarkan asosiasi kuat antar barang
+          </p>
+        </div>
+
+        <!-- Column 2: Problems -->
+        <div class="md:flex-1">
+          <div class="overflow-hidden rounded-md">
+            <img
+              src="https://bhimbvfirtmnovvtcjxo.supabase.co/storage/v1/object/public/assets/images/landing-3.png"
+              alt="Ilustrasi permasalahan"
+              class="w-full h-auto object-cover"
+              onerror="this.onerror=null;this.src='https://bhimbvfirtmnovvtcjxo.supabase.co/storage/v1/object/public/assets/images/landing-3.png';"
+            />
+          </div>
+          <h3 class="mt-4 desc-tinfo text-xl md:text-2xl font-bold text-darkgreen">Permasalahan</h3>
+          <p class="text-darkgreen desc-info text-lg md:text-xl leading-relaxed mt-2">
+            Barang sering ditata sembarangan, Tidak tahu mana produk yang saling berkaitan?
+          </p>
+        </div>
+
+        <!-- Container for columns 3 and 4 -->
+        <div class="md:flex-[2] flex flex-col mt-6 md:mt-0">
+          <!-- Row for columns 3 and 4 -->
+          <div class="flex flex-col md:flex-row gap-6">
+            <!-- Column 3: Main Features Image -->
+            <div class="md:flex-1">
+              <div class="overflow-hidden rounded-md">
+                <img
+                  src="https://bhimbvfirtmnovvtcjxo.supabase.co/storage/v1/object/public/assets/images/landing-4.png"
+                  alt="Ilustrasi fitur utama"
+                  class="w-full h-auto object-cover"
+                  onerror="this.onerror=null;this.src='https://bhimbvfirtmnovvtcjxo.supabase.co/storage/v1/object/public/assets/images/landing-4.png';"
+                />
+              </div>
+            </div>
+
+            <!-- Column 4: Main Features List -->
+            <div class="md:flex-1">
+              <h3 class="desc-tinfo text-xl md:text-2xl font-bold text-darkgreen">Fitur Utama</h3>
+              <ul class="desc-info text-lg md:text-xl text-[#704145] list-disc list-inside space-y-2 mt-2">
+                <li>Upload Data Transaksi</li>
+                <li>Analisis Asosiasi Produk</li>
+                <li>Perbandingan Algoritma</li>
+                <li>Rekomendasi Tata Letak</li>
+                <li>Unduh Tata Letak</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Analysis Button -->
+          <div class="mt-8 md:mt-12 text-center">
+            <button type="button" class="btn-main w-full  px-8" aria-label="Mulai Analisis">
+              Mulai Analisis
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="mt-auto bg-[#a9d5cb] py-8 md:py-10"></footer>
+
+</body>
+</html>

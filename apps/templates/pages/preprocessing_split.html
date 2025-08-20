@@ -1,0 +1,326 @@
+{% extends "/layouts/app.html" %}
+
+{% block content %}
+<!-- Content area -->
+<section class="p-4 mx-auto">
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden max-w-[1280px]">
+        <!-- Header -->
+        <div class="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h2 class="text-2xl md:text-3xl font-bold text-gray-800">Split Data Transaksi</h2>
+                    <p class="text-gray-600 mt-1">Daftar semua transaksi beserta itemnya</p>
+                </div>
+                 <div class="mt-3 md:mt-0">
+                    <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-semibold">
+                        Total: {{ transactions
+                            |length }} transaksi
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- jQuery -->
+        <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+        <!-- Select2 -->
+        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+        <!-- AG Grid -->
+        <script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.js"></script>
+        <link href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-grid.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-alpine.css" rel="stylesheet">
+
+
+        <!-- Grid Container -->
+        <div class="overflow-auto p-3">
+            <div id="myGrid" class="ag-theme-custom p-3" style="height: 540px; width: 100%;"></div>
+        </div>
+    </div>
+</section>
+
+<script>
+$(document).ready(function() {
+
+    // Data dari server
+    const rowData = [
+    {% for transaction in transactions %}
+        {
+            id_transaksi: "{{ transaction[0] or '-' }}",
+            tahun: "{{ transaction[1] or '-' }}",
+            {% for i in range(1, max_items+1) %}
+                item{{ i }}: "{{ transaction[2].split(', ')[i-1] if i-1 < transaction[2].split(', ')|length else '-' }}"{% if not loop.last %},{% endif %}
+            {% endfor %}
+        }{% if not loop.last %},{% endif %}
+    {% endfor %}
+    ];
+
+    // Membuat kolom dinamis untuk item
+    const columnDefs = [
+        { 
+            headerName: "No.", 
+            valueGetter: "node.rowIndex + 1", 
+            width: 80,
+            headerClass: "text-center",
+            cellClass: "text-center",
+            pinned: 'left',
+            suppressSizeToFit: true
+        },
+        { 
+            headerName: "ID Transaksi", 
+            field: "id_transaksi", 
+            width: 120,
+            filter: 'agTextColumnFilter',
+            pinned: 'left'
+        },
+        { 
+            headerName: "Tahun", 
+            field: "tahun", 
+            width: 100,
+            filter: 'agNumberColumnFilter',
+            pinned: 'left'
+        }
+    ];
+    
+    // Menambahkan kolom untuk setiap item
+    {% for i in range(1, max_items+1) %}
+        columnDefs.push({ 
+            headerName: "Item {{ i }}", 
+            field: "item{{ i }}",
+            width: 150,
+            filter: 'agTextColumnFilter',
+            cellRenderer: function(params) {
+                if (params.value && params.value !== '-') {
+                    return '<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-800 border border-indigo-100 shadow-sm">' + params.value + '</span>';
+                }
+                return '<span class="text-gray-400 italic">-</span>';
+            }
+        });
+    {% endfor %}
+
+    const gridOptions = {
+        columnDefs: columnDefs,
+        rowData: rowData,
+        pagination: true,
+        paginationPageSize: 10,
+        paginationPageSizeSelector: [10, 25, 50, 100],
+        defaultColDef: { 
+            sortable: true, 
+            filter: true, 
+            resizable: true,
+            minWidth: 120,
+            flex: 1,
+            floatingFilter: true,
+            suppressMenu: false
+        },
+        rowHeight: 40,
+        animateRows: true,
+        enableCellTextSelection: true,
+        ensureDomOrder: true,
+        sideBar: {
+            toolPanels: ['columns', 'filters'],
+            defaultToolPanel: ''
+        },
+        statusBar: {
+            statusPanels: [
+                { statusPanel: 'agTotalAndFilteredRowCountComponent', align: 'left' },
+                { statusPanel: 'agTotalRowCountComponent', align: 'center' },
+                { statusPanel: 'agFilteredRowCountComponent' },
+                { statusPanel: 'agSelectedRowCountComponent' },
+                { statusPanel: 'agAggregationComponent' }
+            ]
+        },
+        enableRangeSelection: true,
+        rowSelection: 'multiple',
+        suppressRowClickSelection: true
+    };
+
+    const gridDiv = document.querySelector('#myGrid');
+    const gridApi = agGrid.createGrid(gridDiv, gridOptions);
+    
+
+     $('#id_transaksi, #tahun, #item').select2({
+        placeholder: "Pilih filter",
+        allowClear: true
+    });
+});
+</script>
+
+<style>
+    /* Custom AG Grid Theme */
+    .ag-theme-custom {
+        --ag-background-color: #ffffff;
+        --ag-border-color: rgba(199, 210, 254, 0.5);
+        --ag-header-background-color: rgba(99, 102, 241, 0.1);
+        --ag-header-foreground-color: #4f46e5;
+        --ag-odd-row-background-color: rgba(238, 242, 255, 0.4);
+        --ag-row-hover-color: rgba(199, 210, 254, 0.4);
+        --ag-row-border-color: rgba(224, 231, 255, 0.8);
+        --ag-secondary-border-color: rgba(165, 180, 252, 0.3);
+        --ag-font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        --ag-font-size: 14px;
+        --ag-grid-size: 8px;
+        --ag-list-item-height: 24px;
+        --ag-header-height: 40px;
+        --ag-row-height: 50px;
+        --ag-cell-horizontal-padding: 16px;
+        --ag-borders: solid 1px;
+        --ag-border-radius: 8px;
+        --ag-wrapper-border-radius: 12px;
+        --ag-header-column-separator-display: block;
+        --ag-header-column-separator-height: 60%;
+        --ag-header-column-separator-width: 1px;
+        --ag-header-column-separator-color: rgba(165, 180, 252, 0.5);
+        --ag-range-selection-border-color: rgba(99, 102, 241, 0.5);
+        --ag-range-selection-background-color: rgba(99, 102, 241, 0.1);
+        --ag-range-selection-background-color-2: rgba(99, 102, 241, 0.2);
+        --ag-range-selection-background-color-3: rgba(99, 102, 241, 0.3);
+        --ag-range-selection-background-color-4: rgba(99, 102, 241, 0.4);
+        --ag-input-focus-border-color: #6366f1;
+        --ag-input-focus-box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        --ag-selected-tab-underline-color: #6366f1;
+        --ag-selected-tab-underline-width: 2px;
+        --ag-checkbox-background-color: #f5f7ff;
+        --ag-checkbox-checked-color: #6366f1;
+        --ag-modal-overlay-background-color: rgba(107, 114, 128, 0.5);
+    }
+
+    .ag-theme-custom .ag-root-wrapper {
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        overflow: hidden;
+        border: 1px solid rgba(224, 231, 255, 0.8);
+    }
+
+    .ag-theme-custom .ag-header {
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 12px;
+        border-bottom: 2px solid rgba(199, 210, 254, 0.5);
+    }
+
+    .ag-theme-custom .ag-header-cell {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .ag-theme-custom .ag-cell {
+        display: flex;
+        align-items: center;
+        color: #4b5563;
+        font-weight: 500;
+        border-right: 1px solid rgba(224, 231, 255, 0.5);
+    }
+
+    .ag-theme-custom .ag-cell:last-child {
+        border-right: none;
+    }
+
+    .ag-theme-custom .ag-row {
+        border-bottom: 1px solid rgba(224, 231, 255, 0.5);
+    }
+
+    .ag-theme-custom .ag-row-even {
+        background-color: rgba(249, 250, 251, 0.5);
+    }
+
+    .ag-theme-custom .ag-row-hover {
+        background-color: rgba(199, 210, 254, 0.2) !important;
+    }
+
+    .ag-theme-custom .ag-pinned-left-header {
+        border-right: 2px solid rgba(199, 210, 254, 0.5);
+    }
+
+    .ag-theme-custom .ag-pinned-left-cols-container {
+        border-right: 2px solid rgba(199, 210, 254, 0.5);
+    }
+
+    .ag-theme-custom .ag-icon {
+        color: #6366f1;
+    }
+
+    .ag-theme-custom .ag-header-cell-menu-button:hover {
+        background-color: rgba(99, 102, 241, 0.1);
+    }
+
+    .ag-theme-custom .ag-filter-toolpanel-header,
+    .ag-theme-custom .ag-column-toolpanel-header {
+        font-weight: 600;
+        color: #4f46e5;
+        background-color: rgba(238, 242, 255, 0.5);
+    }
+
+    .ag-theme-custom .ag-set-filter-list {
+        border-top: 1px solid rgba(199, 210, 254, 0.5);
+    }
+
+    .ag-theme-custom .ag-tab {
+        padding: 8px 16px;
+        margin: 0 4px;
+        border-radius: 6px 6px 0 0;
+    }
+
+    .ag-theme-custom .ag-tab-selected {
+        background-color: rgba(238, 242, 255, 0.5);
+    }
+
+    .ag-theme-custom .ag-status-bar {
+        background-color: rgba(238, 242, 255, 0.5);
+        border-top: 1px solid rgba(199, 210, 254, 0.5);
+        font-size: 12px;
+        color: #4b5563;
+        padding: 8px 16px;
+    }
+
+    /* Custom scrollbar for the grid */
+    .ag-theme-custom ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+
+    .ag-theme-custom ::-webkit-scrollbar-track {
+        background: rgba(238, 242, 255, 0.5);
+        border-radius: 10px;
+    }
+
+    .ag-theme-custom ::-webkit-scrollbar-thumb {
+        background: rgba(165, 180, 252, 0.7);
+        border-radius: 10px;
+    }
+
+    .ag-theme-custom ::-webkit-scrollbar-thumb:hover {
+        background: rgba(99, 102, 241, 0.8);
+    }
+
+    /* Select2 customization to match the theme */
+    .select2-container--default .select2-selection--single {
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        height: 38px;
+        background-color: white;
+    }
+
+    .select2-container--default .select2-selection--single:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: #4b5563;
+        line-height: 36px;
+        padding-left: 12px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 36px;
+    }
+
+    .select2-container--default.select2-container--open .select2-selection--single {
+        border-color: #6366f1;
+    }
+</style>
+
+{% endblock %}

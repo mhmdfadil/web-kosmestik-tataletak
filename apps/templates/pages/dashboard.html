@@ -1,0 +1,270 @@
+{% extends "/layouts/app.html" %}
+
+{% block content %}
+
+<!-- Content area -->
+ <div class="p-8 max-w-[980px]">
+  <section class="p-1 mx-auto mb-7">
+      <h2 class="content-title text-green-900 text-xl md:text-3xl font-bold text-center" lang="id">
+          Selamat Datang di Dashboard Rekomendasi <br class="hidden md:block" />
+          Tata Letak Kosmetik
+      </h2>
+  </section>
+
+  <section aria-label="Summary cards" class="max-w-[980px] mx-auto">
+    <div class="grid grid-cols-1 sm:grid-cols-4 gap-8 mb-8 align-items-center">
+      <article class="bg-pink-100 rounded-xl p-5 flex flex-col items-center gap-3 text-center w-full max-w-xs">
+        <div class="flex items-center justify-center w-10 h-10 bg-pink-400 rounded-lg text-white">
+          <!-- Icon: slider horizontal -->
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6">
+            <line x1="21" y1="10" x2="3" y2="10"></line>
+            <line x1="21" y1="6" x2="3" y2="6"></line>
+            <line x1="21" y1="14" x2="3" y2="14"></line>
+          </svg>
+        </div>
+        <p class="font-semibold text-sm text-gray-800">Total Transaksi</p>
+        <p class="text-lg font-extrabold text-gray-900">{{ file_info[2] if file_info[2] else 0 }} transaksi</p>
+      </article>
+
+      <article class="bg-purple-100 rounded-xl p-5 flex flex-col items-center gap-3 text-center w-full max-w-xs">
+        <div class="flex items-center justify-center w-10 h-10 bg-purple-400 rounded-lg text-white">
+          <!-- Icon: cube for item -->
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6">
+            <path d="M21 16V8a2 2 0 0 0 -1 -1.732l-7-4a2 2 0 0 0 -2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.732l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            <line x1="12" y1="22" x2="12" y2="12"></line>
+            <polyline points="7 6 12 12 17 6"></polyline>
+          </svg>
+        </div>
+        <p class="font-semibold text-sm text-gray-800">Jumlah Item</p>
+        <p class="text-lg font-extrabold text-gray-900">{{ file_info[3] if file_info[3] else 0 }} <span class="font-normal">item unik</span></p>
+      </article>
+
+      <article class="bg-purple-200 rounded-xl p-5 flex flex-col items-center gap-3 text-center w-full max-w-xs">
+        <div class="flex items-center justify-center w-10 h-10 bg-purple-500 rounded-full text-white">
+          <!-- Icon: trending up for algorithm -->
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2"
+            viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6">
+            <polyline points="16 6 21 6 21 11"></polyline>
+            <polyline points="8 18 3 18 3 13"></polyline>
+            <path d="M3 18l6-6 4 4 8-8"></path>
+          </svg>
+        </div>
+        <p class="font-semibold text-sm text-gray-800">Algoritma Akurat</p>
+        <p class="text-lg font-extrabold text-gray-900">{{ best_algorithms[0].name }} <span class="font-normal">({{ "%.0f"|format(best_algorithms[0].accuracy * 100) }}%)</span></p>
+      </article>
+
+      <article class="bg-blue-100 rounded-xl p-5 flex flex-col items-center gap-3 text-center w-full max-w-xs">
+        <div class="flex items-center justify-center w-10 h-10 bg-blue-400 rounded-lg text-white">
+          <!-- Icon: arrow right for input data -->
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2"
+            viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </div>
+        <p class="font-semibold text-sm text-gray-800">Input Data</p>
+        <p class="text-lg font-extrabold text-gray-900">→ <span>Input Data</span></p>
+      </article>
+    </div>
+  </section>
+
+    <!-- Tambahkan D3.js di head -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+
+<section aria-label="Popular cosmetic items bar chart" class="mt-10 mb-8">
+  <h2 class="text-gray-900 font-semibold mb-2 text-lg sm:text-xl">Item Kosmetik Terpopuler {{ file_info[4] if file_info[4] else '-' }}</h2>
+  
+  <!-- Container untuk grafik D3 -->
+  <div id="bar-chart" class="w-full"></div>
+  
+  <!-- Fallback untuk jika JavaScript tidak aktif -->
+  <div id="chart-fallback" class="flex flex-col gap-4 mb-10 hidden">
+    {% for item, count in top_items %}
+    <div class="flex items-center">
+      <span class="bar-label w-32">{{ item }}</span>
+      <div class="bar-wrapper flex-1 flex items-center">
+        <div class="bar h-8 rounded" style="width: {{ count * 10 }}px; background-color: {{ ['#f472b6', '#8BFAF4FF', '#F8F681FF', '#FAB760FF', '#38bdf8'][loop.index0] }};"></div>
+        <span class="bar-text ml-2">{{ count }}</span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- Custom CSS -->
+<style>
+  .bar-label {
+    min-width: 120px;
+    font-size: 1.275rem;
+    color: #1f2227;
+  }
+  
+  .bar {
+    transition: width 0.5s ease;
+    height: 28px;
+    border-radius: 5px;
+    margin-right: 8px;
+  }
+  
+  #bar-chart .bar-group:hover .bar {
+    opacity: 0.8;
+    transform: scaleY(1.05);
+  }
+</style>
+
+<!-- Script D3.js -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const data = [
+    {% for item, count in top_items %}
+    { item: "{{ item }}", count: {{ count }} },
+    {% endfor %}
+  ];
+  
+  // Warna untuk setiap bar
+  const colors = ['#f472b6', '#8BFAF4FF', '#F8F681FF', '#FAB760FF', '#38bdf8'];
+  
+  // Setup grafik
+  const margin = {top: 20, right: 100, bottom: 30, left: 180};
+  const width = document.getElementById('bar-chart').clientWidth - margin.left - margin.right;
+  const height = data.length * 50;
+  
+  // Buat SVG
+  const svg = d3.select("#bar-chart")
+    .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+  
+  // Skala X
+  const x = d3.scaleLinear()
+    .domain([0, d3.max(data, d => d.count)])
+    .range([0, width]);
+  
+  // Skala Y
+  const y = d3.scaleBand()
+    .domain(data.map(d => d.item))
+    .range([0, height])
+    .padding(0.2);
+  
+  // Tambahkan bar
+  svg.selectAll(".bar")
+    .data(data)
+    .enter()
+    .append("rect")
+    .attr("class", "bar")
+    .attr("y", d => y(d.item))
+    .attr("height", y.bandwidth())
+    .attr("x", 0)
+    .attr("width", d => x(d.count))
+    .attr("fill", (d, i) => colors[i])
+    .attr("rx", 4) // rounded corners
+    .attr("ry", 4);
+  
+  // Tambahkan label item (y-axis)
+  svg.selectAll(".label")
+    .data(data)
+    .enter()
+    .append("text")
+    .attr("class", "label")
+    .attr("y", d => y(d.item) + y.bandwidth() / 2)
+    .attr("x", -10)
+    .attr("dy", ".35em")
+    .style("text-anchor", "end")
+    .text(d => d.item)
+    .style("fill", "#4b5563")
+    .style("font-size", "14px");
+  
+  // Tambahkan nilai count
+  svg.selectAll(".value")
+    .data(data)
+    .enter()
+    .append("text")
+    .attr("class", "value")
+    .attr("y", d => y(d.item) + y.bandwidth() / 2)
+    .attr("x", d => x(d.count) + 5)
+    .attr("dy", ".35em")
+    .text(d => d.count)
+    .style("fill", "#1f2937")
+    .style("font-size", "12px")
+    .style("font-weight", "600");
+  
+  // Tambahkan sumbu X jika diperlukan
+  svg.append("g")
+    .attr("transform", `translate(0,${height})`)
+    .call(d3.axisBottom(x).ticks(5))
+    .selectAll("text")
+    .style("fill", "#6b7280")
+    .style("font-size", "12px");
+});
+</script>
+
+<!-- Fallback jika JavaScript tidak aktif -->
+<noscript>
+  <style>
+    #chart-fallback {
+      display: block !important;
+    }
+    #bar-chart {
+      display: none;
+    }
+  </style>
+</noscript>
+
+    <section aria-label="Action buttons" class="flex gap-6 max-w-full">
+      <button type="button"
+        class="flex-1 text-white bg-pink-400 hover:bg-pink-500 font-semibold rounded-xl py-3 px-6 transition-colors duration-300 focus:outline-none focus:ring-4 focus:ring-pink-300">
+        + Input Data Baru
+      </button>
+      <button type="button"
+        class="flex-1 bg-purple-200 text-purple-900 hover:bg-purple-300 font-semibold rounded-xl py-3 px-6 transition-colors duration-300 focus:outline-none focus:ring-4 focus:ring-purple-300">
+        Lihat Hasil Analisis
+      </button>
+    </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    // Toast configuration
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
+            }
+        });
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+              {% for category, message in messages %}
+                      Toast.fire({
+                          icon: '{{ "success" if category == "success" else
+                                  "error" if category == "danger" else
+                                  "warning" if category == "warning" else
+                                  "info" }}',
+                          title: '{{ message }}',
+                          background: '{{ "#f0f9eb" if category == "success" else
+                                        "#fde8e8" if category == "danger" else
+                                        "#fff8e6" if category == "warning" else
+                                        "#e8f4fd" }}',
+                          color: '{{ "#0f5132" if category == "success" else
+                                  "#842029" if category == "danger" else
+                                  "#664d03" if category == "warning" else
+                                  "#055160" }}',
+                          iconColor: '{{ "#28a745" if category == "success" else
+                                      "#dc3545" if category == "danger" else
+                                      "#ffc107" if category == "warning" else
+                                      "#17a2b8" }}'
+                      });
+              {% endfor %}
+          {% endif %}
+      {% endwith %}
+</script>
+
+{% endblock %}

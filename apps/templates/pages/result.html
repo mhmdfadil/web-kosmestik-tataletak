@@ -1,0 +1,706 @@
+{% extends "/layouts/app.html" %}
+
+{% block content %}
+
+<style>
+    :root {
+        --primary-blue: #3498db;
+        --primary-orange: #e67e22;
+        --primary-green: #2ecc71;
+        --primary-purple: #9b59b6;
+        --primary-red: #e74c3c;
+        --primary-yellow: #f1c40f;
+        --dark-blue: #2980b9;
+        --dark-orange: #d35400;
+        --gray-light: #ecf0f1;
+        --gray-medium: #bdc3c7;
+        --gray-dark: #7f8c8d;
+    }
+
+    .dashboard {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .dashboard-title {
+        text-align: center;
+        margin-bottom: 2rem;
+        color: #0b678b;
+        font-weight: 700;
+        font-size: 1.95rem;
+    }
+
+    .grid-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 2rem;
+        margin: 0 auto;
+    }
+
+    .chart-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        padding: 1.5rem;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .chart-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    }
+
+    .chart-header {
+        margin-bottom: 1.25rem;
+        text-align: center;
+    }
+
+    .chart-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 0;
+    }
+
+    .chart-container {
+        position: relative;
+        flex-grow: 1;
+        min-height: 300px;
+        width: 100%;
+    }
+
+    .chart-container canvas {
+        width: 100% !important;
+        height: 90% !important;
+        display: block;
+    }
+
+    .chart-legend {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+        gap: 0.75rem;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        font-size: 0.85rem;
+        color: #34495e;
+    }
+
+    .legend-color {
+        width: 14px;
+        height: 14px;
+        border-radius: 3px;
+        margin-right: 6px;
+        display: inline-block;
+    }
+
+    @media (max-width: 768px) {
+        .grid-container {
+            grid-template-columns: 1fr;
+        }
+        
+        .chart-card {
+            padding: 1rem;
+        }
+        
+        .chart-container {
+            min-height: 250px;
+        }
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .chart-card {
+        animation: fadeIn 0.6s ease forwards;
+    }
+
+    .chart-card:nth-child(1) { animation-delay: 0.1s; }
+    .chart-card:nth-child(2) { animation-delay: 0.2s; }
+    .chart-card:nth-child(3) { animation-delay: 0.3s; }
+    .chart-card:nth-child(4) { animation-delay: 0.4s; }
+    .chart-card:nth-child(5) { animation-delay: 0.5s; }
+    .chart-card:nth-child(6) { animation-delay: 0.6s; }
+</style>
+
+<div class="dashboard ">
+    <h1 class="dashboard-title">Analisis Hasil & Performa Algoritma</h1>
+    
+    <div class="grid-container">
+        <!-- Execution Time Chart -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <h2 class="chart-title">Perbandingan Waktu Eksekusi</h2>
+            </div>
+            <div class="chart-container">
+                <canvas id="executionTimeChart"></canvas>
+            </div>
+            <div class="chart-legend">
+                <div class="legend-item"><span class="legend-color" style="background-color: var(--primary-blue);"></span>Apriori</div>
+                <div class="legend-item"><span class="legend-color" style="background-color: var(--primary-orange);"></span>FP-Growth</div>
+            </div>
+        </div>
+
+        <!-- Rule Count Chart -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <h2 class="chart-title">Perbandingan Jumlah Rule</h2>
+            </div>
+            <div class="chart-container">
+                <canvas id="ruleCountChart"></canvas>
+            </div>
+            <div class="chart-legend">
+                <div class="legend-item"><span class="legend-color" style="background-color: var(--primary-blue);"></span>Apriori</div>
+                <div class="legend-item"><span class="legend-color" style="background-color: var(--primary-orange);"></span>FP-Growth</div>
+            </div>
+        </div>
+
+        <!-- Accuracy Pie Chart -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <h2 class="chart-title">Distribusi Rata-rata Akurasi</h2>
+            </div>
+            <div class="chart-container">
+                <canvas id="accuracyPieChart"></canvas>
+            </div>
+            <div class="chart-legend">
+                <div class="legend-item"><span class="legend-color" style="background-color: var(--primary-blue);"></span>Apriori</div>
+                <div class="legend-item"><span class="legend-color" style="background-color: var(--primary-orange);"></span>FP-Growth</div>
+            </div>
+        </div>
+
+        <!-- Lift Comparison Chart -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <h2 class="chart-title">Perbandingan Rata-rata Lift</h2>
+            </div>
+            <div class="chart-container">
+                <canvas id="liftLineChart"></canvas>
+            </div>
+            <div class="chart-legend">
+                <div class="legend-item"><span class="legend-color" style="background-color: var(--primary-green);"></span>Lift</div>
+            </div>
+        </div>
+
+        <!-- Parameter Chart -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <h2 class="chart-title">Parameter Algoritma</h2>
+            </div>
+            <div class="chart-container">
+                <canvas id="parameterBarChart"></canvas>
+            </div>
+            <div class="chart-legend">
+                <div class="legend-item"><span class="legend-color" style="background-color: var(--primary-blue);"></span>Apriori</div>
+                <div class="legend-item"><span class="legend-color" style="background-color: var(--primary-orange);"></span>FP-Growth</div>
+            </div>
+        </div>
+
+        <!-- Time vs Rule Chart -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <h2 class="chart-title">Waktu vs Jumlah Rule</h2>
+            </div>
+            <div class="chart-container">
+                <canvas id="timeVsRuleChart"></canvas>
+            </div>
+            <div class="chart-legend">
+                <div class="legend-item"><span class="legend-color" style="background-color: var(--primary-blue);"></span>Waktu (detik)</div>
+                <div class="legend-item"><span class="legend-color" style="background-color: var(--primary-orange);"></span>Jumlah Rule</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+
+<script>
+  // Register plugins
+  Chart.register(ChartDataLabels);
+
+  // Common configuration options
+  const commonOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      datalabels: {
+        display: false
+      },
+      tooltip: {
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        titleFont: { size: 14, weight: 'bold' },
+        bodyFont: { size: 12 },
+        padding: 12,
+        cornerRadius: 6,
+        displayColors: false
+      },
+      legend: { display: false }
+    },
+    animation: {
+      duration: 1000,
+      easing: 'easeOutQuart'
+    }
+  };
+
+  // Setup data for all charts
+  const labels = ['Apriori', 'FP-Growth'];
+  const colors = {
+    apriori: '#3498db',
+    fpGrowth: '#e67e22',
+    green: '#2ecc71',
+    purple: '#9b59b6'
+  };
+
+  // Sample data - replace with your actual data
+  const sampleData = {
+    apriori: {
+      exec_time: parseFloat('{{ metrics_ap.exec_time|default(0) }}'),
+      total_rules: parseInt('{{ metrics_ap.total_rules|default(0) }}'),
+      avg_accuracy: parseFloat('{{ metrics_ap.avg_accuracy|default(0) }}'),
+      avg_lift: parseFloat('{{ metrics_ap.avg_lift|default(0) }}')
+    },
+    fpGrowth: {
+      exec_time: parseFloat('{{ metrics_fp.exec_time|default(0) }}'),
+      total_rules: parseInt('{{ metrics_fp.total_rules|default(0) }}'),
+      avg_accuracy: parseFloat('{{ metrics_fp.avg_accuracy|default(0) }}'),
+      avg_lift: parseFloat('{{ metrics_fp.avg_lift|default(0) }}')
+    },
+    parameters: {
+      apriori: {
+        min_support: parseFloat('{{ setup[0]|default(0) }}'),
+        min_confidence: parseFloat('{{ setup[1]|default(0) }}')
+      },
+      fpGrowth: {
+        min_support: parseFloat('{{ setup[2]|default(0) }}'),
+        min_confidence: parseFloat('{{ setup[3]|default(0) }}')
+      }
+    }
+  };
+
+  // Execution Time Chart
+  const executionTimeData = {
+    labels: labels,
+    datasets: [{
+      label: 'Waktu Eksekusi (detik)',
+      data: [sampleData.apriori.exec_time, sampleData.fpGrowth.exec_time],
+      backgroundColor: [colors.apriori, colors.fpGrowth],
+      borderColor: ['#2980b9', '#d35400'],
+      borderWidth: 1,
+      borderRadius: 6
+    }]
+  };
+
+  const executionTimeConfig = {
+    type: 'bar',
+    data: executionTimeData,
+    options: {
+      ...commonOptions,
+      scales: {
+        y: {
+          beginAtZero: true,
+          title: { 
+            display: true, 
+            text: 'Detik',
+            font: { weight: 'bold' }
+          },
+          grid: {
+            color: 'rgba(0, 0, 0, 0.05)'
+          }
+        },
+        x: {
+          grid: {
+            display: false
+          }
+        }
+      },
+      plugins: {
+        datalabels: {
+          anchor: 'end',
+          align: 'top',
+          formatter: (value) => value.toFixed(2) + 's',
+          font: {
+            weight: 'bold'
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: (context) => {
+              return `${context.dataset.label}: ${context.raw.toFixed(2)} detik`;
+            }
+          }
+        }
+      }
+    }
+  };
+
+  // Rule Count Chart
+  const ruleCountData = {
+    labels: labels,
+    datasets: [{
+      label: 'Jumlah Rule',
+      data: [sampleData.apriori.total_rules, sampleData.fpGrowth.total_rules],
+      backgroundColor: [colors.apriori, colors.fpGrowth],
+      borderColor: ['#2980b9', '#d35400'],
+      borderWidth: 1,
+      borderRadius: 6
+    }]
+  };
+
+  const ruleCountConfig = {
+    type: 'bar',
+    data: ruleCountData,
+    options: {
+      ...commonOptions,
+      scales: {
+        y: {
+          beginAtZero: true,
+          title: { 
+            display: true, 
+            text: 'Jumlah',
+            font: { weight: 'bold' }
+          },
+          ticks: {
+            stepSize: 1
+          },
+          grid: {
+            color: 'rgba(0, 0, 0, 0.05)'
+          }
+        },
+        x: {
+          grid: {
+            display: false
+          }
+        }
+      },
+      plugins: {
+        datalabels: {
+          anchor: 'end',
+          align: 'top',
+          formatter: (value) => Math.round(value),
+          font: {
+            weight: 'bold'
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: (context) => {
+              return `${context.dataset.label}: ${context.raw}`;
+            }
+          }
+        }
+      }
+    }
+  };
+
+  // Accuracy Pie Chart
+  const accuracyData = {
+    labels: labels,
+    datasets: [{
+      label: 'Rata-rata Akurasi',
+      data: [sampleData.apriori.avg_accuracy, sampleData.fpGrowth.avg_accuracy],
+      backgroundColor: [colors.apriori, colors.fpGrowth],
+      borderColor: ['#fff', '#fff'],
+      borderWidth: 2
+    }]
+  };
+
+  const accuracyConfig = {
+    type: 'doughnut',
+    data: accuracyData,
+    options: {
+      ...commonOptions,
+      cutout: '70%',
+      plugins: {
+        datalabels: {
+          formatter: (value) => value.toFixed(1) + '%',
+          color: '#fff',
+          font: {
+            weight: 'bold',
+            size: 14
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: (context) => {
+              return `${context.label}: ${context.raw.toFixed(1)}%`;
+            }
+          }
+        }
+      }
+    }
+  };
+
+  // Lift Comparison Line Chart
+  const liftLineConfig = {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Rata-rata Lift',
+        data: [sampleData.apriori.avg_lift, sampleData.fpGrowth.avg_lift],
+        borderColor: colors.green,
+        backgroundColor: colors.green,
+        borderWidth: 3,
+        pointBackgroundColor: '#fff',
+        pointBorderColor: colors.green,
+        pointBorderWidth: 2,
+        pointRadius: 6,
+        pointHoverRadius: 8
+      }]
+    },
+    options: {
+      ...commonOptions,
+      scales: {
+        y: {
+          beginAtZero: true,
+          title: {
+            display: true,
+            text: 'Nilai Lift',
+            font: { weight: 'bold' }
+          },
+          grid: {
+            color: 'rgba(0, 0, 0, 0.05)'
+          }
+        },
+        x: {
+          grid: {
+            display: false
+          }
+        }
+      },
+      plugins: {
+        datalabels: {
+          anchor: 'end',
+          align: 'top',
+          formatter: (value) => value.toFixed(2),
+          font: {
+            weight: 'bold'
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: (context) => {
+              return `${context.dataset.label}: ${context.raw.toFixed(2)}`;
+            }
+          }
+        }
+      }
+    }
+  };
+
+  // Parameter Bar Chart (horizontal)
+  const parameterLabels = ['Min Support', 'Min Confidence'];
+  const parameterData = {
+    labels: parameterLabels,
+    datasets: [
+      {
+        label: 'Apriori',
+        data: [sampleData.parameters.apriori.min_support, sampleData.parameters.apriori.min_confidence],
+        backgroundColor: colors.apriori,
+        borderColor: '#2980b9',
+        borderWidth: 1,
+        borderRadius: 4
+      },
+      {
+        label: 'FP-Growth',
+        data: [sampleData.parameters.fpGrowth.min_support, sampleData.parameters.fpGrowth.min_confidence],
+        backgroundColor: colors.fpGrowth,
+        borderColor: '#d35400',
+        borderWidth: 1,
+        borderRadius: 4
+      }
+    ]
+  };
+
+  const parameterBarConfig = {
+    type: 'bar',
+    data: parameterData,
+    options: {
+      ...commonOptions,
+      indexAxis: 'y',
+      scales: {
+        x: {
+          beginAtZero: true,
+          max: 1,
+          title: {
+            display: true,
+            text: 'Nilai Parameter',
+            font: { weight: 'bold' }
+          },
+          ticks: {
+            stepSize: 0.2
+          },
+          grid: {
+            color: 'rgba(0, 0, 0, 0.05)'
+          }
+        },
+        y: {
+          grid: {
+            display: false
+          }
+        }
+      },
+      plugins: {
+        datalabels: {
+          anchor: 'end',
+          align: 'end',
+          formatter: (value) => value.toFixed(2),
+          font: {
+            weight: 'bold'
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: (context) => {
+              return `${context.dataset.label}: ${context.raw.toFixed(2)}`;
+            }
+          }
+        }
+      }
+    }
+  };
+
+  // Time vs Rule Chart (Dual axis line chart)
+  const timeVsRuleData = {
+    labels: labels,
+    datasets: [
+      {
+        label: 'Waktu (detik)',
+        data: [sampleData.apriori.exec_time, sampleData.fpGrowth.exec_time],
+        yAxisID: 'y',
+        borderColor: colors.apriori,
+        backgroundColor: colors.apriori,
+        borderWidth: 3,
+        pointBackgroundColor: '#fff',
+        pointBorderColor: colors.apriori,
+        pointBorderWidth: 2,
+        pointRadius: 6,
+        pointHoverRadius: 8
+      },
+      {
+        label: 'Jumlah Rule',
+        data: [sampleData.apriori.total_rules, sampleData.fpGrowth.total_rules],
+        yAxisID: 'y1',
+        borderColor: colors.fpGrowth,
+        backgroundColor: colors.fpGrowth,
+        borderWidth: 3,
+        pointBackgroundColor: '#fff',
+        pointBorderColor: colors.fpGrowth,
+        pointBorderWidth: 2,
+        pointRadius: 6,
+        pointHoverRadius: 8
+      }
+    ]
+  };
+
+  const timeVsRuleConfig = {
+    type: 'line',
+    data: timeVsRuleData,
+    options: {
+      ...commonOptions,
+      interaction: {
+        mode: 'index',
+        intersect: false
+      },
+      scales: {
+        y: {
+          type: 'linear',
+          position: 'left',
+          title: { 
+            display: true, 
+            text: 'Waktu (detik)',
+            font: { weight: 'bold' }
+          },
+          beginAtZero: true,
+          grid: {
+            color: 'rgba(0, 0, 0, 0.05)'
+          }
+        },
+        y1: {
+          type: 'linear',
+          position: 'right',
+          title: { 
+            display: true, 
+            text: 'Jumlah Rule',
+            font: { weight: 'bold' }
+          },
+          beginAtZero: true,
+          grid: {
+            drawOnChartArea: false
+          }
+        },
+        x: {
+          grid: {
+            display: false
+          }
+        }
+      },
+      plugins: {
+        tooltip: {
+          mode: 'index',
+          intersect: false,
+          callbacks: {
+            label: (context) => {
+              let label = context.dataset.label || '';
+              if (label) {
+                label += ': ';
+                label += context.parsed.y.toFixed(context.dataset.yAxisID === 'y' ? 2 : 0);
+              }
+              return label;
+            }
+          }
+        }
+      }
+    }
+  };
+
+  // Initialize all charts when DOM is loaded
+  document.addEventListener('DOMContentLoaded', () => {
+    // Set a small timeout to ensure CSS transitions are ready
+    setTimeout(() => {
+      new Chart(
+        document.getElementById('executionTimeChart'),
+        executionTimeConfig
+      );
+      
+      new Chart(
+        document.getElementById('ruleCountChart'),
+        ruleCountConfig
+      );
+      
+      new Chart(
+        document.getElementById('accuracyPieChart'),
+        accuracyConfig
+      );
+      
+      new Chart(
+        document.getElementById('liftLineChart'),
+        liftLineConfig
+      );
+      
+      new Chart(
+        document.getElementById('parameterBarChart'),
+        parameterBarConfig
+      );
+      
+      new Chart(
+        document.getElementById('timeVsRuleChart'),
+        timeVsRuleConfig
+      );
+    }, 100);
+  });
+</script>
+
+{% endblock %}

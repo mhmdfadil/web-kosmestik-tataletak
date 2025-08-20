@@ -1,0 +1,324 @@
+{% extends "/layouts/app.html" %}
+
+{% block content %}
+<style>
+        .cards-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px;
+            flex-wrap: wrap;
+            
+        }
+        
+        .card-link {
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .card {
+            width: 280px;
+            height: 360px; /* Tinggi tetap sama */
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            font-size: 14px;
+            transition: box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .number-circle {
+            font-size: 32px;
+            margin-bottom: 7px;
+            user-select: none;
+            width: 55px;
+            height: 55px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            color: #298ca1;
+        }
+        
+        .emoji-icon {
+            font-size: 36px; 
+        }
+        
+        .card-title {
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .card-desc {
+
+            flex-grow: 1;
+            font-size: 18px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .bold-text {
+            font-weight: 600;
+            margin-top: 3px;
+        }
+
+  /* Custom icon styles */
+  .icon-dashboard::before {
+    content: "\1F3E0"; /* house emoji as icon */
+  }
+  .icon-input::before {
+    content: "\1F4C2"; /* folder emoji */
+  }
+  .icon-proses::before {
+    content: "\21BB"; /* clockwise arrow */
+  }
+  .icon-apriori::before,
+  .icon-fpgrowth::before {
+    content: "\2699"; /* gear */
+  }
+  .icon-hasil::before {
+    content: "\1F4CA"; /* bar chart */
+  }
+   /* Custom logout button style */
+         .btn-proses {
+               width: 33%;
+               padding: 0.95rem 1em;
+               background-color: #298ca1;
+               border: none;
+               border-radius: 10px;
+               font-size: 1.15rem;
+               align-items: center;
+               justify-content: center;
+               font-weight: 600;
+               color: #d9e7ec;
+               box-shadow: inset 0 -5px 10px rgba(255, 255, 255, 0.25), 0 6px 8px rgba(0, 0, 0, 0.15);
+               cursor: pointer;
+               user-select: none;
+               transition: all 0.3s ease;
+               display: flex;
+         }
+         .btn-proses:hover {
+               background-color: #3ca2be;
+               transform: translateY(-2px);
+               box-shadow: inset 0 -5px 10px rgba(255, 255, 255, 0.3), 0 8px 12px rgba(0, 0, 0, 0.2);
+         }
+
+         .alert {
+  position: relative;
+  padding: 0.75rem 1.25rem;
+  margin-bottom: 1rem;
+  border: 1px solid transparent;
+  border-radius: 0.25rem;
+}
+
+.alert-warning {
+  color: #856404;
+  background-color: #fff3cd;
+  border-color: #ffeeba;
+}
+
+.alert-warning hr {
+  border-top-color: #ffe8a1;
+}
+
+.alert-warning .alert-link {
+  color: #533f03;
+}
+</style>
+<!-- Content area -->
+<div class="p-6 items-center justify-center">
+  <div class="cards-container">
+    <div class="bg-white p-5 items-center justify-center rounded-md border border-gray-400 shadow-sm" style="width: 78%; font-size: 19px;">
+        {% if file_info %}
+        <p class="mb-4"><span class="inline-block align-middle mr-2 select-none">📁</span><strong>File:</strong> {{ file_info[1] }}</p>
+        <p class="mb-4"><span class="inline-block align-middle mr-2 select-none">📊</span><strong>Jumlah Transaksi:</strong> {{ file_info[2] }}</p>
+        <p class="mb-0"><span class="inline-block align-middle mr-2 select-none">🗓️</span><strong>Tahun:</strong> {{ file_info[4] }}</p>
+        {% else %}
+        <div class="alert alert-warning">
+            Tidak ada informasi file yang ditemukan.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="cards-container">
+    {% if process[1] == True or process[1] == 1 %}
+        <a href="{{ url_for('routes.preprocessing_split') }}" class="card-link">
+    {% else %}
+        <div class="card-link" style="pointer-events: none; opacity: 0.6;">
+    {% endif %}
+            <div class="card">
+                <div class="number-circle" aria-hidden="true">①</div>
+                <div class="emoji-icon" aria-hidden="true">📁</div>
+                <div class="card-desc">
+                    <div class="card-title">Slipt Data</div>
+                    <p>Membagi data ke format siap proses</p>
+                    <span>(bisa dipecah per tahun/batch)</span>
+                </div>
+            </div>
+    {% if process[1] == True or process[1] == 1 %}
+        </a>
+    {% else %}
+        </div>
+    {% endif %}
+    
+    {% if process[1] == True or process[1] == 1 %}
+        <a href="{{ url_for('routes.preprocessing_basket') }}" class="card-link">
+    {% else %}
+        <div class="card-link" style="pointer-events: none; opacity: 0.6;">
+    {% endif %}
+            <div class="card">
+                <div class="number-circle" aria-hidden="true">②</div>
+                <div class="emoji-icon" aria-hidden="true">🧺</div>
+                <div class="card-desc">
+                    <div class="card-title">Format Basket</div>
+                    <p>Mengelompokkan data berdasarkan transaksi ke format [item1, item2, ...]</p>
+                </div>
+            </div>
+    {% if process[1] == True or process[1] == 1 %}
+        </a>
+    {% else %}
+        </div>
+    {% endif %}
+    
+    {% if process[1] == True or process[1] == 1 %}
+        <a href="{{ url_for('routes.preprocessing_onehot') }}" class="card-link">
+    {% else %}
+        <div class="card-link" style="pointer-events: none; opacity: 0.6;">
+    {% endif %}
+            <div class="card">
+                <div class="number-circle" aria-hidden="true">③</div>
+                <div class="emoji-icon" aria-hidden="true">🔢</div>
+                <div class="card-desc">
+                    <div class="card-title">Binerisasi</div>
+                    <p>Mengubah setiap transaksi jadi format biner 1/0 (item ada/tidak)</p>
+                </div>
+            </div>
+    {% if process[1] == True or process[1] == 1 %}
+        </a>
+    {% else %}
+        </div>
+    {% endif %}
+</div>
+      
+<div class="cards-container">
+    {% if file_info %}
+        {% if process[1] %}
+            <!-- Already processed state -->
+            <div class="flex flex-col items-center" style="width: 100%;">
+            <button class="rounded shadow-md text-white transition-colors focus:outline-none btn-proses"
+                    type="button" 
+                    style="margin-top: 100px; border: #000; pointer-events: none; opacity: 0.7;"
+                    disabled>
+                Proses Semua Tahapan
+            </button> 
+            <p class="mt-2 text-teal-600">Anda sudah memproses tahapan ini.</p>
+            </div>
+        {% else %}
+            <!-- Ready to process state -->
+            <form id="processForm" method="POST" action="{{ url_for('routes.process') }}" class="hidden"></form>
+            <button class="rounded shadow-md text-white transition-colors focus:outline-none btn-proses hover:bg-blue-600"
+                    type="button"
+                    style="margin-top: 100px; border: #000;"
+                    onclick="confirmProcess()">
+                Proses Semua Tahapan
+            </button>
+        {% endif %}
+    {% else %}
+        <!-- No file info state -->
+        <button class="rounded shadow-md text-white transition-colors focus:outline-none btn-proses"
+                type="button" 
+                style="margin-top: 100px; border: #000; pointer-events: none; opacity: 0.7;"
+                disabled>
+            Proses Semua Tahapan
+        </button>
+    {% endif %}
+</div>
+
+</section>
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+function confirmProcess() {
+    Swal.fire({
+        title: 'Konfirmasi',
+        text: 'Apakah kamu yakin ingin memproses data ini?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#298ca1',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ya, proses!',
+        cancelButtonText: 'Batal',
+        backdrop: true,
+        allowOutsideClick: false
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Tampilkan loading
+            Swal.fire({
+                title: 'Memproses...',
+                html: 'Data sedang diproses, harap tunggu.',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            // Submit form secara manual
+            document.getElementById('processForm').submit();
+            
+            // Catatan: Setelah form disubmit, halaman akan di-reload
+            // oleh server, sehingga tidak perlu menutup loading
+        }
+    });
+}
+</script>
+
+<script>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+          {% for category, message in messages %}
+                  Swal.fire({
+                      title: '{{ "Pemrosesan Data Berhasil!" if category == "success" else
+                              "Pemrosesan Data Berhasil!" if category == "danger" else
+                              "Perhatian!" if category == "warning" else
+                              "Informasi" }}',
+                      text: '{{ message }}',
+                      icon: '{{ "success" if category == "success" else
+                              "error" if category == "danger" else
+                              "warning" if category == "warning" else
+                              "info" }}',
+                      background: '{{ "#f0f9eb" if category == "success" else
+                                    "#fde8e8" if category == "danger" else
+                                    "#fff8e6" if category == "warning" else
+                                    "#e8f4fd" }}',
+                      color: '{{ "#0f5132" if category == "success" else
+                              "#842029" if category == "danger" else
+                              "#664d03" if category == "warning" else
+                              "#055160" }}',
+                      iconColor: '{{ "#28a745" if category == "success" else
+                                  "#dc3545" if category == "danger" else
+                                  "#ffc107" if category == "warning" else
+                                  "#17a2b8" }}',
+                      confirmButtonColor: '{{ "#28a745" if category == "success" else
+                                          "#dc3545" if category == "danger" else
+                                          "#ffc107" if category == "warning" else
+                                          "#17a2b8" }}'
+                  });
+          {% endfor %}
+      {% endif %}
+    {% endwith %}
+</script>
+
+{% endblock %}
