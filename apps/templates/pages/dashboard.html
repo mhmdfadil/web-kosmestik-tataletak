@@ -53,7 +53,7 @@
         <p class="text-lg font-extrabold text-gray-900">{{ best_algorithms[0].name }} <span class="font-normal">({{ "%.0f"|format(best_algorithms[0].accuracy * 100) }}%)</span></p>
       </article>
 
-      <article class="bg-blue-100 rounded-xl p-5 flex flex-col items-center gap-3 text-center w-full max-w-xs">
+      <a href="{{ url_for('routes.input') }}" class="bg-blue-100 rounded-xl p-5 flex flex-col items-center gap-3 text-center w-full max-w-xs">
         <div class="flex items-center justify-center w-10 h-10 bg-blue-400 rounded-lg text-white">
           <!-- Icon: arrow right for input data -->
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2"
@@ -64,7 +64,7 @@
         </div>
         <p class="font-semibold text-sm text-gray-800">Input Data</p>
         <p class="text-lg font-extrabold text-gray-900">→ <span>Input Data</span></p>
-      </article>
+      </a>
     </div>
   </section>
 
@@ -213,7 +213,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </noscript>
 
     <section aria-label="Action buttons" class="flex gap-6 max-w-full">
-      <button type="button"
+      <button type="button" onclick="window.location.href='{{ url_for('routes.input') }}'"
         class="flex-1 text-white bg-pink-400 hover:bg-pink-500 font-semibold rounded-xl py-3 px-6 transition-colors duration-300 focus:outline-none focus:ring-4 focus:ring-pink-300">
         + Input Data Baru
       </button>
